@@ -11,6 +11,7 @@
 #include <QCommandLineOption>
 
 #include "mainwindow.h"
+#include "editdesign.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,19 +21,12 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
+    EditDesign editDesign;
     QCoreApplication::setOrganizationName("University of Toronto Concrete Canoe Team");
     QCoreApplication::setApplicationName("PANDA_POSSUM");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-    QCommandLineParser parser;
-    //parser.setApplicationDescription(QCoreApplication::applicationName());
-    //parser.addHelpOption();
-    //parser.addVersionOption();
-    //parser.addPositionalArgument("file", "The file to open.");
-    //parser.process(app);
 
     MainWindow mainWin(4,16);
-    //if (!parser.positionalArguments().isEmpty())
-    //    mainWin.loadFile(parser.positionalArguments().first());
     mainWin.show();
     return app.exec();
 }

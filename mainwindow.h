@@ -26,16 +26,13 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void newFile();
-    void open();
-    bool save();
-    bool saveAs();
     void tutorial();
     void parameters();
+    void design();
+    void analysis();
+    void rank();
+    void mesh();
     void documentWasModified();
-#ifndef QT_NO_SESSIONMANAGER
-    void commitData(QSessionManager &);
-#endif
 
 private:
     void createActions();

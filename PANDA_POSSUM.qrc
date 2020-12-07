@@ -9,5 +9,7 @@
         <file>images/canoe_logo.png</file>
         <file>images/design.png</file>
         <file>images/analyze.png</file>
+        <file>images/mesh.png</file>
+        <file>images/rank.png</file>
     </qresource>
 </RCC>
