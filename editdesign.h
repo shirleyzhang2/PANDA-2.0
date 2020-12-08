@@ -16,6 +16,9 @@ public:
     //EditDesign( QWidget * parent = 0);
 
 private slots:
+    void createActions();
+    void addDesign();
+    void deleteDesign();
 
 };
 //! [1]

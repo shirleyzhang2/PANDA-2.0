@@ -19,8 +19,9 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(int rows, int cols, QWidget *parent = nullptr);
-
-    void loadFile(const QString &fileName);
+    std::map<std::string, std::vector<int> > myMap;
+    //https://stackoverflow.com/questions/11611626/dynamically-changing-name-of-an-array-in-c
+    //http://www.cplusplus.com/doc/tutorial/arrays/
 
 protected:
     void closeEvent(QCloseEvent *event) override;
