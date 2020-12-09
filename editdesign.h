@@ -19,6 +19,10 @@ private slots:
     void createActions();
     void addDesign();
     void deleteDesign();
+    void updateInputSetup();
+    void updateWeightedTable();
+    void updateDesign();
+    void nameChange();
 
 };
 //! [1]
