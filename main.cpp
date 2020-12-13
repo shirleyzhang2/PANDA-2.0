@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Created for the University of Toronto Concrete Canoe Team (2020)
+** Created for the University of Toronto Concrete Canoe Team (2020-2021)
 ** Contributors: David Ruggiero, Rick Liu, Shirley Zhang, Ernie Lee, Reynold Chan
 **
 ****************************************************************************/

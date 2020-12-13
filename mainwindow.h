@@ -20,6 +20,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(int rows, int cols, QWidget *parent = nullptr);
 
+public slots:
+    void print();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 
@@ -40,6 +43,12 @@ private:
     bool maybeSave();
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
+    void copy();
+    void paste();
+
+    QAction *printAction;
+
+
     QString strippedName(const QString &fullFileName);
 
     QPlainTextEdit *textEdit;

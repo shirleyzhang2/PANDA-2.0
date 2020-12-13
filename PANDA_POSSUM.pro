@@ -1,8 +1,8 @@
 QT       += core gui
-
+qtHaveModule(printsupport): QT += printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -11,11 +11,13 @@ CONFIG += c++11
 SOURCES += \
     editdesign.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    printview.cpp
 
 HEADERS += \
     editdesign.h \
-    mainwindow.h
+    mainwindow.h \
+    printview.h
 
 FORMS += \
     editdesign.ui

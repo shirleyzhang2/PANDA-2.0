@@ -1,6 +1,11 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 #include "editdesign.h"
+#include "printview.h"
+
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport>
+#endif
 
 MainWindow::MainWindow(int rows, int cols, QWidget *parent)
     : QMainWindow(parent),
@@ -12,8 +17,27 @@ MainWindow::MainWindow(int rows, int cols, QWidget *parent)
     table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     const char *params[16] = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
+
     for (int i = 0; i < 16; i++)
+    {
         table->setHorizontalHeaderItem(i, new QTableWidgetItem(QString(params[i])));
+    }
+
+    // Create checkboxes
+
+    for (int j = 0; j < table->rowCount(); j++)
+    {
+        QCheckBox * checkB = new QCheckBox(this); //Create checkbox
+        checkB->setCheckState(Qt::Unchecked); //Set the status
+        QWidget *w = new QWidget(this); //Create a widget
+        QHBoxLayout *hLayout = new QHBoxLayout(); //Create layout
+        hLayout->addWidget(checkB); //Add checkbox
+        hLayout->setMargin(0); //Set the edge distance otherwise it will be difficult to see
+        hLayout->setAlignment(checkB, Qt::AlignCenter); //Center
+        w->setLayout(hLayout); //Set the layout of the widget
+        table->setCellWidget(j, 15, w); //Place the widget in the table
+
+    }
 
     createActions();
     createStatusBar();
@@ -98,16 +122,42 @@ void MainWindow::documentWasModified()
 void MainWindow::createActions()
 {
 
+    // File: Exit, Print
+
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QToolBar *fileToolBar = addToolBar(tr("File"));
 
     fileMenu->addSeparator();
 
     const QIcon exitIcon = QIcon::fromTheme("application-exit");
     QAction *exitAct = fileMenu->addAction(exitIcon, tr("&Exit"), this, &QWidget::close);
     exitAct->setShortcuts(QKeySequence::Quit);
-
     exitAct->setStatusTip(tr("Exit the application"));
 
+    const QIcon printIcon = QIcon(":/images/print.png");
+    QAction *printAct = new QAction(printIcon, tr("&Print"), this);
+    printAct->setStatusTip(tr("Print the results spreadsheet"));
+    connect(printAct, &QAction::triggered, this, &MainWindow::print);
+    fileMenu->addAction(printAct);
+    fileToolBar->addAction(printAct);
+
+    // Edit: Copy, Paste
+
+    const QIcon copyIcon = QIcon(":/images/copy.png");
+    QAction *copyAct = new QAction(copyIcon, tr("&Copy"), this);
+    copyAct->setStatusTip(tr("Copy selected cells"));
+    connect(copyAct, &QAction::triggered, this, &MainWindow::copy);
+    fileMenu->addAction(copyAct);
+    fileToolBar->addAction(copyAct);
+
+    const QIcon pasteIcon = QIcon(":/images/paste.png");
+    QAction *pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
+    pasteAct->setStatusTip(tr("Paste to spreadsheet"));
+    connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
+    fileMenu->addAction(pasteAct);
+    fileToolBar->addAction(pasteAct);
+
+    // Design: Edit Design, Run Analysis, Rank Designs, Generate Mesh
 
     QMenu *editMenu = menuBar()->addMenu(tr("&Design"));
     QToolBar *editToolBar = addToolBar(tr("Design"));
@@ -140,12 +190,16 @@ void MainWindow::createActions()
     editMenu->addAction(meshAct);
     editToolBar->addAction(meshAct);
 
+    // Help: Tutorial, Parameters
+
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *tutAct = helpMenu->addAction(tr("&Tutorial"), this, &MainWindow::tutorial);
     tutAct->setStatusTip(tr("Show a step-by-step tutorial on how to use PANDA + POSSUM"));
 
     QAction *paramAct = helpMenu->addAction(tr("&Parameters"), this, &MainWindow::parameters);
     paramAct->setStatusTip(tr("Show the definitions for parameters used in the input table"));
+
+
 }
 
 void MainWindow::createStatusBar()
@@ -193,3 +247,26 @@ QString MainWindow::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
+
+void MainWindow::print()
+{
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
+    QPrinter printer(QPrinter::ScreenResolution);
+    QPrintPreviewDialog dlg(&printer);
+    PrintView view;
+    view.setModel(table->model());
+    connect(&dlg, &QPrintPreviewDialog::paintRequested, &view, &PrintView::print);
+    dlg.exec();
+#endif
+}
+
+void MainWindow::copy()
+{
+
+}
+
+void MainWindow::paste()
+{
+
+}
+
