@@ -14,5 +14,6 @@
         <file>images/print.png</file>
         <file>images/save.png</file>
         <file>images/add.png</file>
+        <file>images/exit.png</file>
     </qresource>
 </RCC>

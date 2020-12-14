@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 #include "editdesign.h"
+#include "runanalysis.h"
 #include "printview.h"
 
 #if defined(QT_PRINTSUPPORT_LIB)
@@ -10,7 +11,7 @@
 MainWindow::MainWindow(int rows, int cols, QWidget *parent)
     : QMainWindow(parent),
       textEdit(new QPlainTextEdit),
-    table(new QTableWidget(rows, cols, this))
+      table(new QTableWidget(rows, cols, this))
 
 {
     setCentralWidget(table);
@@ -90,16 +91,14 @@ void MainWindow::parameters()
 
 void MainWindow::design()
 {
-    //QMessageBox::about(this, tr("Edit Design"),
-    //          tr(""));
     EditDesign design;
     design.exec();
 }
 
 void MainWindow::analysis()
 {
-    QMessageBox::about(this, tr("Run Analysis"),
-              tr(""));
+    RunAnalysis analysis;
+    analysis.exec();
 }
 
 void MainWindow::rank()
@@ -129,11 +128,6 @@ void MainWindow::createActions()
 
     fileMenu->addSeparator();
 
-    const QIcon exitIcon = QIcon::fromTheme("application-exit");
-    QAction *exitAct = fileMenu->addAction(exitIcon, tr("&Exit"), this, &QWidget::close);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    exitAct->setStatusTip(tr("Exit the application"));
-
     const QIcon printIcon = QIcon(":/images/print.png");
     QAction *printAct = new QAction(printIcon, tr("&Print"), this);
     printAct->setStatusTip(tr("Print the results spreadsheet"));
@@ -141,54 +135,62 @@ void MainWindow::createActions()
     fileMenu->addAction(printAct);
     fileToolBar->addAction(printAct);
 
+    const QIcon exitIcon = QIcon(":/images/exit.png");
+    QAction *exitAct = fileMenu->addAction(exitIcon, tr("&Exit"), this, &QWidget::close);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    exitAct->setStatusTip(tr("Exit the application"));
+
     // Edit: Copy, Paste
+
+    QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+    QToolBar *editToolBar = addToolBar(tr("Edit"));
 
     const QIcon copyIcon = QIcon(":/images/copy.png");
     QAction *copyAct = new QAction(copyIcon, tr("&Copy"), this);
     copyAct->setStatusTip(tr("Copy selected cells"));
     connect(copyAct, &QAction::triggered, this, &MainWindow::copy);
-    fileMenu->addAction(copyAct);
-    fileToolBar->addAction(copyAct);
+    editMenu->addAction(copyAct);
+    editToolBar->addAction(copyAct);
 
     const QIcon pasteIcon = QIcon(":/images/paste.png");
     QAction *pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
     pasteAct->setStatusTip(tr("Paste to spreadsheet"));
     connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
-    fileMenu->addAction(pasteAct);
-    fileToolBar->addAction(pasteAct);
+    editMenu->addAction(pasteAct);
+    editToolBar->addAction(pasteAct);
 
     // Design: Edit Design, Run Analysis, Rank Designs, Generate Mesh
 
-    QMenu *editMenu = menuBar()->addMenu(tr("&Design"));
-    QToolBar *editToolBar = addToolBar(tr("Design"));
+    QMenu *designMenu = menuBar()->addMenu(tr("&Design"));
+    QToolBar *designToolBar = addToolBar(tr("Design"));
 
     const QIcon designIcon = QIcon(":/images/design.png");
     QAction *designAct = new QAction(designIcon, tr("&Edit Design"), this);
     designAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(designAct, &QAction::triggered, this, &MainWindow::design);
-    editMenu->addAction(designAct);
-    editToolBar->addAction(designAct);
+    designMenu->addAction(designAct);
+    designToolBar->addAction(designAct);
 
     const QIcon analysisIcon = QIcon(":/images/analyze.png");
     QAction *analysisAct = new QAction(analysisIcon, tr("&Run Analysis"), this);
     analysisAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(analysisAct, &QAction::triggered, this, &MainWindow::analysis);
-    editMenu->addAction(analysisAct);
-    editToolBar->addAction(analysisAct);
+    designToolBar->addAction(analysisAct);
+    designToolBar->addAction(analysisAct);
 
     const QIcon rankIcon = QIcon(":/images/rank.png");
     QAction *rankAct = new QAction(rankIcon, tr("&Rank Designs"), this);
     rankAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(rankAct, &QAction::triggered, this, &MainWindow::rank);
-    editMenu->addAction(rankAct);
-    editToolBar->addAction(rankAct);
+    designToolBar->addAction(rankAct);
+    designToolBar->addAction(rankAct);
 
     const QIcon meshIcon = QIcon(":/images/mesh.png");
     QAction *meshAct = new QAction(meshIcon, tr("&Generate Mesh"), this);
     meshAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(meshAct, &QAction::triggered, this, &MainWindow::mesh);
-    editMenu->addAction(meshAct);
-    editToolBar->addAction(meshAct);
+    designToolBar->addAction(meshAct);
+    designToolBar->addAction(meshAct);
 
     // Help: Tutorial, Parameters
 
@@ -198,7 +200,6 @@ void MainWindow::createActions()
 
     QAction *paramAct = helpMenu->addAction(tr("&Parameters"), this, &MainWindow::parameters);
     paramAct->setStatusTip(tr("Show the definitions for parameters used in the input table"));
-
 
 }
 

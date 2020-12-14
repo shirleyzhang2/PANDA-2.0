@@ -12,6 +12,7 @@
 
 #include "mainwindow.h"
 #include "editdesign.h"
+#include "runanalysis.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     EditDesign editDesign;
+    RunAnalysis runanalysis;
     QCoreApplication::setOrganizationName("University of Toronto Concrete Canoe Team");
     QCoreApplication::setApplicationName("PANDA_POSSUM");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);

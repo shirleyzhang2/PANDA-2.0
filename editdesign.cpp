@@ -11,7 +11,6 @@ EditDesign::EditDesign(QWidget *parent)
 {
     setupUi(this);
     createActions();
-    //QLineEdit nameLineEdit;
 }
 
 void EditDesign::createActions()
@@ -22,11 +21,11 @@ void EditDesign::createActions()
 
     const QIcon addIcon = QIcon(":/images/add.png");
     addDesignButton -> setIcon(addIcon);
-    connect(addDesignButton, &QToolButton::clicked, this, &EditDesign::addDesign);
+    connect(addDesignButton, SIGNAL(clicked), this, SLOT(addDesign()));
 
     const QIcon deleteIcon = QIcon(":/images/delete.png");
     deleteDesignButton -> setIcon(deleteIcon);
-    connect(deleteDesignButton, &QToolButton::clicked, this, &EditDesign::deleteDesign);
+    connect(deleteDesignButton, SIGNAL(clicked), this, SLOT(deleteDesign()));
 
     connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
 
@@ -36,6 +35,10 @@ void EditDesign::createActions()
     connect(weightedTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateWeightedTable()));
 
     connect(editDesignTable, SIGNAL(cellChanged(int,int)), this, SLOT(nameChange()));
+
+    // Set ok and cancel buttons
+    connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(designButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
 }
 
@@ -59,18 +62,6 @@ void EditDesign::addDesign()
 void EditDesign::deleteDesign()
 {
     //Add warning to prevent user from deleting the last design
-    /*
-    QModelIndexList indexes =  editDesignTable->selectionModel()->selectedRows();
-    int countRow = indexes.count();
-    for( int i = countRow; i > 0; i--)
-    {
-        std::map <std::string, Design>::iterator it;
-        std::string name = editDesignTable->item(countRow,0)->text().toStdString();
-        it = allDesign.find (name);
-            allDesign.erase (it);
-        editDesignTable->removeRow( indexes.at(i-1).row() );
-    }
-    */
     QList<QTableWidgetSelectionRange> sRangeList = editDesignTable->selectedRanges();
     for(const auto &p : qAsConst(sRangeList))
     {
@@ -79,7 +70,6 @@ void EditDesign::deleteDesign()
             std::string key = editDesignTable->item(i,0)->text().toStdString();
             allDesign.erase(key);
             editDesignTable->removeRow(i);
-
         }
     }
     clearTables();
@@ -139,7 +129,6 @@ void EditDesign::updateDesign()
 
 void EditDesign::populate()
 {
-//    editDesignTable->setRowCount(0);
     editDesignTable->model()->removeRows(0,editDesignTable->rowCount());
 
     for (const auto& [key, value] : allDesign)
@@ -149,6 +138,7 @@ void EditDesign::populate()
         QTableWidgetItem *newItem = new QTableWidgetItem(QString::fromStdString(key));
 
         editDesignTable->setItem(row, 0, newItem);
+        qDebug() << QString::fromStdString(key);
     }
 }
 

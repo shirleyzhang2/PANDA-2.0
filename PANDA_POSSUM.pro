@@ -12,15 +12,18 @@ SOURCES += \
     editdesign.cpp \
     main.cpp \
     mainwindow.cpp \
-    printview.cpp
+    printview.cpp \
+    runanalysis.cpp
 
 HEADERS += \
     editdesign.h \
     mainwindow.h \
-    printview.h
+    printview.h \
+    runanalysis.h
 
 FORMS += \
-    editdesign.ui
+    editdesign.ui \
+    runanalysis.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
