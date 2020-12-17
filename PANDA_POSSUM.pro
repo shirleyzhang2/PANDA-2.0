@@ -12,12 +12,14 @@ SOURCES += \
     editdesign.cpp \
     main.cpp \
     mainwindow.cpp \
+    model.cpp \
     printview.cpp \
     runanalysis.cpp
 
 HEADERS += \
     editdesign.h \
     mainwindow.h \
+    model.h \
     printview.h \
     runanalysis.h
 

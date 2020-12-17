@@ -12,6 +12,7 @@ MainWindow::MainWindow(int rows, int cols, QWidget *parent)
     : QMainWindow(parent),
       textEdit(new QPlainTextEdit),
       table(new QTableWidget(rows, cols, this))
+      //runanalysis(new RunAnalysis(&allDesign, this))
 
 {
     setCentralWidget(table);
@@ -91,14 +92,30 @@ void MainWindow::parameters()
 
 void MainWindow::design()
 {
-    EditDesign design;
-    design.exec();
+    EditDesign editDesign(this);
+    editDesign.setDesignForEdit(allDesign);
+    editDesign.exec();
+    allDesign = editDesign.getDesign();
+
+    for (const auto& [key, value] : allDesign)
+    {
+        qDebug() << QString::fromStdString(key);
+    }
 }
 
 void MainWindow::analysis()
 {
-    RunAnalysis analysis;
-    analysis.exec();
+    qDebug() << "When is this called??";
+    //RunAnalysis analysis(this);
+    //qDebug() << "Finish running analysis";
+    //qDebug() << "Analysis";
+    for (const auto& [key, value] : allDesign)
+    {
+        qDebug() << QString::fromStdString(key);
+    }
+    RunAnalysis runanalysis(this);
+    runanalysis.setDesign(allDesign);
+    runanalysis.exec();
 }
 
 void MainWindow::rank()

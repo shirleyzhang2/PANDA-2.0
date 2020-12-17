@@ -3,29 +3,33 @@
 #include <QtWidgets>
 #include <iostream>
 
-//static std::string currDesign;
+std::map <std::string, Model> EditDesign::allDesignForEdit;
 
 //! [0]
 EditDesign::EditDesign(QWidget *parent)
     : QDialog(parent)
 {
     setupUi(this);
+    //EditDesign::allDesignForEdit = {};
     createActions();
+}
+
+void EditDesign::setDesignForEdit(std::map <std::string, Model> &alldesign)
+{
+    allDesignForEdit = alldesign;
 }
 
 void EditDesign::createActions()
 {
-    currDesign = editDesignTable->item(0,0)->text().toStdString();
-    allDesign[currDesign] = Design();
     editDesignTable->setSortingEnabled(false);
 
     const QIcon addIcon = QIcon(":/images/add.png");
     addDesignButton -> setIcon(addIcon);
-    connect(addDesignButton, SIGNAL(clicked), this, SLOT(addDesign()));
+    connect(addDesignButton, &QAbstractButton::clicked, this, &EditDesign::addDesign);
 
     const QIcon deleteIcon = QIcon(":/images/delete.png");
     deleteDesignButton -> setIcon(deleteIcon);
-    connect(deleteDesignButton, SIGNAL(clicked), this, SLOT(deleteDesign()));
+    connect(deleteDesignButton, &QAbstractButton::clicked, this, &EditDesign::deleteDesign);
 
     connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
 
@@ -40,20 +44,25 @@ void EditDesign::createActions()
     connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(designButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
+    populate();
+
 }
 
 void EditDesign::addDesign()
 {
     int id = 1;
     static std::string name;
-    auto iter = allDesign.begin();
-    while (iter != allDesign.end())
+    name = "New Design "+std::to_string(id);
+
+    auto iter = allDesignForEdit.begin();
+    while (iter != allDesignForEdit.end())
     {
         id += 1;
         ++iter;
         name = "New Design "+std::to_string(id);
     }
-    allDesign[name] = Design();
+    allDesignForEdit[name] = Model();
+    currDesignForEdit = name;
 
     populate();
     clearTables();
@@ -68,7 +77,7 @@ void EditDesign::deleteDesign()
         for (auto i = p.topRow() + p.rowCount() - 1; i > p.topRow() - 1; i--)
         {
             std::string key = editDesignTable->item(i,0)->text().toStdString();
-            allDesign.erase(key);
+            allDesignForEdit.erase(key);
             editDesignTable->removeRow(i);
         }
     }
@@ -77,14 +86,14 @@ void EditDesign::deleteDesign()
 
 void EditDesign::updateInputSetup()
 {
-    currDesign = editDesignTable->currentItem()->text().toStdString();
+    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 
     for( int i = getInputRow(); i > 0; i--)
     {
         for ( int j = getInputCol(); j > 0; j--)
         {
             double val = inputSetupTable->item(i,j)->text().toDouble();
-            allDesign[currDesign].inputSetupInfo[getInputRow()][getInputCol()] = val;
+            allDesignForEdit[currDesignForEdit].inputSetupInfo[getInputRow()][getInputCol()] = val;
             qDebug() << val;
         }
     }
@@ -92,14 +101,14 @@ void EditDesign::updateInputSetup()
 
 void EditDesign::updateWeightedTable()
 {
-    currDesign = editDesignTable->currentItem()->text().toStdString();
+    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 
     for( int i = getWeightedRow(); i > 0; i--)
     {
         for ( int j = getWeightedCol(); j > 0; j--)
         {
             double val = weightedTable->item(i,j)->text().toDouble();
-            allDesign[currDesign].weightedTableInfo[i][j] = val;
+            allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j] = val;
             qDebug() << val;
         }
     }
@@ -108,13 +117,13 @@ void EditDesign::updateWeightedTable()
 void EditDesign::updateDesign()
 {
     clearTables();
-    currDesign = editDesignTable->currentItem()->text().toStdString();
+    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 
     for (int i = 0; i < getInputRow(); ++i)
     {
             for (int j = 0; j < getInputCol(); ++j)
             {
-                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesign[currDesign].inputSetupInfo[i][j]));
+                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j]));
             }
     }
 
@@ -122,7 +131,7 @@ void EditDesign::updateDesign()
     {
             for (int j = 0; j < getWeightedCol(); ++j)
             {
-                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesign[currDesign].weightedTableInfo[i][j]));
+                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j]));
             }
     }
 }
@@ -130,8 +139,7 @@ void EditDesign::updateDesign()
 void EditDesign::populate()
 {
     editDesignTable->model()->removeRows(0,editDesignTable->rowCount());
-
-    for (const auto& [key, value] : allDesign)
+    for (const auto& [key, value] : allDesignForEdit)
     {
         int row = editDesignTable->rowCount();
         editDesignTable->insertRow(row);
@@ -151,9 +159,9 @@ void EditDesign::nameChange()
     {
         const std::string newDesign = editDesignTable->currentItem()->text().toStdString();
 
-        auto nodeHandler = allDesign.extract(currDesign);
+        auto nodeHandler = allDesignForEdit.extract(currDesignForEdit);
         nodeHandler.key() = newDesign;
-        allDesign.insert(std::move(nodeHandler));
+        allDesignForEdit.insert(std::move(nodeHandler));
 
         updateDesign();
     }
@@ -198,4 +206,3 @@ void EditDesign::clearTables()
     weightedTable->setHorizontalHeaderLabels(weightedHeader);
 
 }
-

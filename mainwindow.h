@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "model.h"
+#include "runanalysis.h"
 
 QT_BEGIN_NAMESPACE
 class QPlainTextEdit;
@@ -48,12 +50,17 @@ private:
 
     QAction *printAction;
 
+    //Design d;
+    std::map <std::string, Model> allDesign;
+
 
     QString strippedName(const QString &fullFileName);
 
     QPlainTextEdit *textEdit;
     QTableWidget *table;
     QString curFile;
+
+//    RunAnalysis *runanalysis;
 };
 //! [0]
 

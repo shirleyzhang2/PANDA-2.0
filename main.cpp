@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
-    EditDesign editDesign;
-    RunAnalysis runanalysis;
+    //EditDesign editDesign;
+    //RunAnalysis runanalysis;
     QCoreApplication::setOrganizationName("University of Toronto Concrete Canoe Team");
     QCoreApplication::setApplicationName("PANDA_POSSUM");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);

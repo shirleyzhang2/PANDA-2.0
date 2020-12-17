@@ -4,29 +4,25 @@
 //! [0]
 #include <QDialog>
 #include "ui_editdesign.h"
+#include "model.h"
 
 //! [0]
 //!
-class Design
-{
-
-public:
-    double inputSetupInfo[13][3];
-    double weightedTableInfo[9][3];
-    std::string optimal[10];
-};
 
 //! [1]
-class EditDesign : public QDialog, private Ui::EditDesign
+class EditDesign : public QDialog, /*public Design,*/ private Ui::EditDesign
 {
     Q_OBJECT
 
 public:
 
     explicit EditDesign(QWidget *parent = nullptr);
-    std::map <std::string, Design> allDesign;
-    std::string currDesign;
-    //EditDesign( QWidget * parent = 0);
+    void setDesignForEdit(std::map <std::string, Model> &alldesign);
+    std::map <std::string, Model> getDesign() { return allDesignForEdit; }
+
+private:
+    static std::map <std::string, Model> allDesignForEdit;
+    std::string currDesignForEdit;
 
 private slots:
     void createActions();
