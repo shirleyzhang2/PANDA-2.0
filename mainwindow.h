@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "model.h"
+#include "editdesign.h"
 #include "runanalysis.h"
 
 QT_BEGIN_NAMESPACE
@@ -39,6 +40,7 @@ private slots:
 
 private:
     void createActions();
+    void createContextMenu();
     void createStatusBar();
     void readSettings();
     void writeSettings();
@@ -48,9 +50,10 @@ private:
     void copy();
     void paste();
 
-    QAction *printAction;
+    // should keep all actions here
+    QAction *copyAct;
+    QAction *pasteAct;
 
-    //Design d;
     std::map <std::string, Model> allDesign;
 
 
@@ -60,7 +63,8 @@ private:
     QTableWidget *table;
     QString curFile;
 
-//    RunAnalysis *runanalysis;
+    EditDesign *editdesign;
+    RunAnalysis *runanalysis;
 };
 //! [0]
 

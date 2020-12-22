@@ -40,6 +40,13 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QPushButton" name="loadDesignButton">
+      <property name="text">
+       <string>Refresh Designs</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label">
       <property name="text">
        <string>Select Designs to analyze:</string>

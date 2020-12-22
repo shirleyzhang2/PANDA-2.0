@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>960</width>
-    <height>533</height>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,7 +69,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0">
          <property name="spacing">
           <number>6</number>
          </property>
@@ -91,8 +91,11 @@
          </item>
          <item>
           <widget class="QTabWidget" name="tabWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::ActionsContextMenu</enum>
+           </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="inputSetupTab">
             <property name="accessibleName">
@@ -109,6 +112,9 @@
                <width>461</width>
                <height>421</height>
               </rect>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
              </property>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
@@ -234,7 +240,7 @@
              </attribute>
              <row>
               <property name="text">
-               <string>Weight</string>
+               <string>Canoe weight</string>
               </property>
              </row>
              <row>
@@ -294,6 +300,13 @@
              </column>
             </widget>
            </widget>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>Confirm Design</string>
+           </property>
           </widget>
          </item>
         </layout>

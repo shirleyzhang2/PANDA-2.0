@@ -14,14 +14,17 @@ SOURCES += \
     mainwindow.cpp \
     model.cpp \
     printview.cpp \
-    runanalysis.cpp
+    runanalysis.cpp \
+    warningmessage.cpp
 
 HEADERS += \
+    constants.h \
     editdesign.h \
     mainwindow.h \
     model.h \
     printview.h \
-    runanalysis.h
+    runanalysis.h \
+    warningmessage.h
 
 FORMS += \
     editdesign.ui \

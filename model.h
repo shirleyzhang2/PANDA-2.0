@@ -3,21 +3,15 @@
 #include <QObject>
 #include <iostream>
 #include <map>
+#include "constants.h"
 
 class Model
 {
 public:
-    double inputSetupInfo[13][3];
-    double weightedTableInfo[9][3];
-    std::string optimal[10];
+    double inputSetupInfo[constants::input_row][constants::input_col]{ };
+    double weightedTableInfo[constants::weighted_row][constants::weighted_col]{ };
+    std::string optimal[constants::optimal_col]{ };
     Model();
-};
-
-class Design
-{
-public:
-    static std::map <std::string, Model> allDesign;
-    static std::string currDesign;
 };
 
 #endif // MODEL_H

@@ -1,4 +1,5 @@
 #include "editdesign.h"
+#include "warningmessage.h"
 #include <QWidget>
 #include <QtWidgets>
 #include <iostream>
@@ -12,6 +13,7 @@ EditDesign::EditDesign(QWidget *parent)
     setupUi(this);
     //EditDesign::allDesignForEdit = {};
     createActions();
+    createContextMenu();
 }
 
 void EditDesign::setDesignForEdit(std::map <std::string, Model> &alldesign)
@@ -34,9 +36,9 @@ void EditDesign::createActions()
     connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
 
     // Update inputSetup and weightedTable each time a different cell is clicked
-    connect(inputSetupTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateInputSetup()));
+    //connect(inputSetupTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateInputSetup()));
 
-    connect(weightedTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateWeightedTable()));
+    //connect(weightedTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateWeightedTable()));
 
     connect(editDesignTable, SIGNAL(cellChanged(int,int)), this, SLOT(nameChange()));
 
@@ -44,8 +46,41 @@ void EditDesign::createActions()
     connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(designButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
+    // create copy action
+    pasteAct = new QAction(tr("&Copy"), this);
+    pasteAct->setIcon(QIcon(":/images/paste.png"));
+    pasteAct->setShortcut(tr("Ctrl+N"));
+    pasteAct->setStatusTip(tr("Paste into table"));
+    connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
+
     populate();
 
+}
+
+void EditDesign::createContextMenu()
+{
+    //inputSetupTable->addAction(copyAct);
+    inputSetupTable->addAction(pasteAct);
+    inputSetupTable->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    // TO DO: weighted table
+
+}
+
+void EditDesign::copy()
+{
+    QTableWidgetSelectionRange range = selectedRange();
+     QString str;
+     for (int i = 0; i < range.rowCount(); ++i) {
+     if (i > 0)
+     str += "\n";
+     for (int j = 0; j < range.columnCount(); ++j) {
+     if (j > 0)
+     str += "\t";
+     //str += formula(range.topRow() + i, range.leftColumn() + j);
+     }
+     }
+     QApplication::clipboard()->setText(str);
 }
 
 void EditDesign::addDesign()
@@ -87,13 +122,18 @@ void EditDesign::deleteDesign()
 void EditDesign::updateInputSetup()
 {
     currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+    warning.exec();
 
-    for( int i = getInputRow(); i > 0; i--)
+    for( int i = constants::input_row; i > 0; i--)
     {
-        for ( int j = getInputCol(); j > 0; j--)
+        for ( int j = constants::input_col; j > 0; j--)
         {
+            //check if any cell is empty
+            //if empty, pop up message box (please complete all required fields in input setup and weighted table)
+            //break
             double val = inputSetupTable->item(i,j)->text().toDouble();
-            allDesignForEdit[currDesignForEdit].inputSetupInfo[getInputRow()][getInputCol()] = val;
+            allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j] = val;
             qDebug() << val;
         }
     }
@@ -102,10 +142,12 @@ void EditDesign::updateInputSetup()
 void EditDesign::updateWeightedTable()
 {
     currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+    warning.exec();
 
-    for( int i = getWeightedRow(); i > 0; i--)
+    for( int i = constants::weighted_row; i > 0; i--)
     {
-        for ( int j = getWeightedCol(); j > 0; j--)
+        for ( int j = constants::weighted_col; j > 0; j--)
         {
             double val = weightedTable->item(i,j)->text().toDouble();
             allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j] = val;
@@ -119,22 +161,23 @@ void EditDesign::updateDesign()
     clearTables();
     currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 
-    for (int i = 0; i < getInputRow(); ++i)
+    for (int i = 0; i < constants::input_row; ++i)
     {
-            for (int j = 0; j < getInputCol(); ++j)
+            for (int j = 0; j < constants::input_col; ++j)
             {
                 inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j]));
             }
     }
 
-    for (int i = 0; i < getWeightedRow(); ++i)
+    for (int i = 0; i < constants::weighted_row; ++i)
     {
-            for (int j = 0; j < getWeightedCol(); ++j)
+            for (int j = 0; j < constants::weighted_col; ++j)
             {
-                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j]));
+                weightedTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j]));
             }
     }
 }
+
 
 void EditDesign::populate()
 {
@@ -146,6 +189,9 @@ void EditDesign::populate()
         QTableWidgetItem *newItem = new QTableWidgetItem(QString::fromStdString(key));
 
         editDesignTable->setItem(row, 0, newItem);
+        editDesignTable->setCurrentItem(newItem);
+        currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+
         qDebug() << QString::fromStdString(key);
     }
 }
@@ -166,26 +212,6 @@ void EditDesign::nameChange()
         updateDesign();
     }
 
-}
-
-int EditDesign::getInputRow()
-{
-    return inputSetupTable->rowCount();
-}
-
-int EditDesign::getInputCol()
-{
-    return inputSetupTable->columnCount();
-}
-
-int EditDesign::getWeightedRow()
-{
-    return weightedTable->rowCount();
-}
-
-int EditDesign::getWeightedCol()
-{
-    return weightedTable->rowCount();
 }
 
 void EditDesign::clearTables()

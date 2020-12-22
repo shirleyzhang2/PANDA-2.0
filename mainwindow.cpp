@@ -11,16 +11,18 @@
 MainWindow::MainWindow(int rows, int cols, QWidget *parent)
     : QMainWindow(parent),
       textEdit(new QPlainTextEdit),
-      table(new QTableWidget(rows, cols, this))
-      //runanalysis(new RunAnalysis(&allDesign, this))
+      table(new QTableWidget(rows, cols, this)),
+      editdesign(new EditDesign(this)),
+      runanalysis(new RunAnalysis(/*&allDesign, */this))
 
 {
     setCentralWidget(table);
     table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    const char *params[16] = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
+    constexpr int num_params{ 16 };
+    const char *params[num_params] = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
 
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < num_params; i++)
     {
         table->setHorizontalHeaderItem(i, new QTableWidgetItem(QString(params[i])));
     }
@@ -37,11 +39,13 @@ MainWindow::MainWindow(int rows, int cols, QWidget *parent)
         hLayout->setMargin(0); //Set the edge distance otherwise it will be difficult to see
         hLayout->setAlignment(checkB, Qt::AlignCenter); //Center
         w->setLayout(hLayout); //Set the layout of the widget
-        table->setCellWidget(j, 15, w); //Place the widget in the table
+        constexpr int checkbox_loc{ 15 }; //Set checkbox location
+        table->setCellWidget(j, checkbox_loc, w); //Place the widget in the table
 
     }
 
     createActions();
+    createContextMenu();
     createStatusBar();
     readSettings();
 
@@ -92,10 +96,10 @@ void MainWindow::parameters()
 
 void MainWindow::design()
 {
-    EditDesign editDesign(this);
-    editDesign.setDesignForEdit(allDesign);
-    editDesign.exec();
-    allDesign = editDesign.getDesign();
+    //EditDesign editDesign(this);
+    editdesign->setDesignForEdit(allDesign);
+    editdesign->exec();
+    allDesign = editdesign->getDesign();
 
     for (const auto& [key, value] : allDesign)
     {
@@ -105,17 +109,13 @@ void MainWindow::design()
 
 void MainWindow::analysis()
 {
-    qDebug() << "When is this called??";
-    //RunAnalysis analysis(this);
-    //qDebug() << "Finish running analysis";
-    //qDebug() << "Analysis";
     for (const auto& [key, value] : allDesign)
     {
         qDebug() << QString::fromStdString(key);
     }
-    RunAnalysis runanalysis(this);
-    runanalysis.setDesign(allDesign);
-    runanalysis.exec();
+    //RunAnalysis runanalysis(this);
+    runanalysis->setDesign(allDesign);
+    runanalysis->exec();
 }
 
 void MainWindow::rank()
@@ -169,12 +169,13 @@ void MainWindow::createActions()
     editMenu->addAction(copyAct);
     editToolBar->addAction(copyAct);
 
-    const QIcon pasteIcon = QIcon(":/images/paste.png");
-    QAction *pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
-    pasteAct->setStatusTip(tr("Paste to spreadsheet"));
-    connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
-    editMenu->addAction(pasteAct);
-    editToolBar->addAction(pasteAct);
+//    should not let user modify main table
+//    const QIcon pasteIcon = QIcon(":/images/paste.png");
+//    QAction *pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
+//    pasteAct->setStatusTip(tr("Paste to spreadsheet"));
+//    connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
+//    editMenu->addAction(pasteAct);
+//    editToolBar->addAction(pasteAct);
 
     // Design: Edit Design, Run Analysis, Rank Designs, Generate Mesh
 
@@ -192,21 +193,21 @@ void MainWindow::createActions()
     QAction *analysisAct = new QAction(analysisIcon, tr("&Run Analysis"), this);
     analysisAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(analysisAct, &QAction::triggered, this, &MainWindow::analysis);
-    designToolBar->addAction(analysisAct);
+    designMenu->addAction(analysisAct);
     designToolBar->addAction(analysisAct);
 
     const QIcon rankIcon = QIcon(":/images/rank.png");
     QAction *rankAct = new QAction(rankIcon, tr("&Rank Designs"), this);
     rankAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(rankAct, &QAction::triggered, this, &MainWindow::rank);
-    designToolBar->addAction(rankAct);
+    designMenu->addAction(rankAct);
     designToolBar->addAction(rankAct);
 
     const QIcon meshIcon = QIcon(":/images/mesh.png");
     QAction *meshAct = new QAction(meshIcon, tr("&Generate Mesh"), this);
     meshAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
     connect(meshAct, &QAction::triggered, this, &MainWindow::mesh);
-    designToolBar->addAction(meshAct);
+    designMenu->addAction(meshAct);
     designToolBar->addAction(meshAct);
 
     // Help: Tutorial, Parameters
@@ -217,6 +218,17 @@ void MainWindow::createActions()
 
     QAction *paramAct = helpMenu->addAction(tr("&Parameters"), this, &MainWindow::parameters);
     paramAct->setStatusTip(tr("Show the definitions for parameters used in the input table"));
+
+}
+
+
+//TO DO: separate create actions function into create tool bar, create menu etc.
+
+void MainWindow::createContextMenu()
+{
+    table->addAction(copyAct);
+    table->addAction(pasteAct);
+    table->setContextMenuPolicy(Qt::ActionsContextMenu);
 
 }
 

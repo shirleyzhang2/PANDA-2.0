@@ -3,6 +3,7 @@
 
 //! [0]
 #include <QDialog>
+#include <QTableWidget>
 #include "ui_editdesign.h"
 #include "model.h"
 
@@ -20,12 +21,19 @@ public:
     void setDesignForEdit(std::map <std::string, Model> &alldesign);
     std::map <std::string, Model> getDesign() { return allDesignForEdit; }
 
+    QTableWidgetSelectionRange selectedRange() const;
+
 private:
     static std::map <std::string, Model> allDesignForEdit;
     std::string currDesignForEdit;
 
+    //TO DO: QAction *copyAct;
+    QAction *pasteAct;
+
 private slots:
     void createActions();
+    void createContextMenu();
+    void copy(); //Make this public?? and use spreadsheet class
     void addDesign();
     void deleteDesign();
     void updateInputSetup();
@@ -33,10 +41,6 @@ private slots:
     void updateDesign();
     void populate();
     void nameChange();
-    int getInputRow();
-    int getInputCol();
-    int getWeightedRow();
-    int getWeightedCol();
     void clearTables();
 
 };

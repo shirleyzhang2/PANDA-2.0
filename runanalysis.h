@@ -17,6 +17,7 @@ private:
 
 private slots:
     void createActions();
+    void loadDesign();
 };
 
 #endif // RUNANALYSIS_H
