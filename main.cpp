@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("PANDA_POSSUM");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
-    MainWindow mainWin(4,16);
+    MainWindow mainWin/*(4,16)*/;
     mainWin.show();
     return app.exec();
 }

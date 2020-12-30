@@ -13,6 +13,9 @@ class QTableWidget;
 class QAction;
 class QMenu;
 class QSessionManager;
+
+class Spreadsheet;
+
 QT_END_NAMESPACE
 
 //! [0]
@@ -21,7 +24,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(int rows, int cols, QWidget *parent = nullptr);
+    MainWindow(/*int rows, int cols, */QWidget *parent = nullptr);
 
 public slots:
     void print();
@@ -51,11 +54,10 @@ private:
     void paste();
 
     // should keep all actions here
-    QAction *copyAct;
-    QAction *pasteAct;
+    //QAction *copyAct;
 
     std::map <std::string, Model> allDesign;
-
+    enum { MagicNumber = 0x7F51C883, RowCount = 999, ColumnCount = 16 };
 
     QString strippedName(const QString &fullFileName);
 
@@ -65,6 +67,8 @@ private:
 
     EditDesign *editdesign;
     RunAnalysis *runanalysis;
+
+    Spreadsheet *spreadsheet;
 };
 //! [0]
 

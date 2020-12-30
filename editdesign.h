@@ -3,13 +3,12 @@
 
 //! [0]
 #include <QDialog>
-#include <QTableWidget>
 #include "ui_editdesign.h"
 #include "model.h"
 
 //! [0]
 //!
-
+class Spreadsheet;
 //! [1]
 class EditDesign : public QDialog, /*public Design,*/ private Ui::EditDesign
 {
@@ -21,23 +20,30 @@ public:
     void setDesignForEdit(std::map <std::string, Model> &alldesign);
     std::map <std::string, Model> getDesign() { return allDesignForEdit; }
 
-    QTableWidgetSelectionRange selectedRange() const;
-
 private:
     static std::map <std::string, Model> allDesignForEdit;
     std::string currDesignForEdit;
 
-    //TO DO: QAction *copyAct;
-    QAction *pasteAct;
+    Spreadsheet *inputSetupTable;
+    Spreadsheet *weightedTable;
+
+    QStringList inputHeaderH = {"Min", "Max", "Value"};
+    QStringList inputHeaderV = {"length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density"};
+    QStringList weightedHeaderH = {"Target Value", "Standard Dev.", "Weight"};
+    QStringList weightedHeaderV = {"Canoe Weight", "Cp", "Freeboard", "Drag", "Stability", "Leak angle", "Second moment", "Waterplane centroid", "Paddler center"};
+
+    QAction *cutAction;
+    QAction *copyAction;
+    QAction *pasteAction;
 
 private slots:
     void createActions();
     void createContextMenu();
-    void copy(); //Make this public?? and use spreadsheet class
     void addDesign();
     void deleteDesign();
-    void updateInputSetup();
-    void updateWeightedTable();
+    void updateInput();
+    //void updateInputSetup();
+    //void updateWeightedTable();
     void updateDesign();
     void populate();
     void nameChange();

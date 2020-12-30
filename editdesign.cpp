@@ -1,5 +1,6 @@
 #include "editdesign.h"
 #include "warningmessage.h"
+#include "spreadsheet.h"
 #include <QWidget>
 #include <QtWidgets>
 #include <iostream>
@@ -11,7 +12,29 @@ EditDesign::EditDesign(QWidget *parent)
     : QDialog(parent)
 {
     setupUi(this);
-    //EditDesign::allDesignForEdit = {};
+
+    // Input Setup
+    inputSetupTable = new Spreadsheet(13,3);
+    tabWidget->addTab(inputSetupTable, "Input Setup");
+    //inputSetupTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    inputSetupTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //inputSetupTable->horizontalHeader()->setStretchLastSection(true);
+    inputSetupTable->setHorizontalHeaderLabels( inputHeaderH );
+    inputSetupTable->setVerticalHeaderLabels( inputHeaderV );
+    inputSetupTable->setCurrentCell(0, 0);
+
+    // Weighted Table
+    weightedTable = new Spreadsheet(9,3);
+    tabWidget->addTab(weightedTable, "Weighted Table");
+    //weightedTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    weightedTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //weightedTable->horizontalHeader()->setStretchLastSection(true);
+    weightedTable->setHorizontalHeaderLabels( weightedHeaderH );
+    weightedTable->setVerticalHeaderLabels( weightedHeaderV );
+    weightedTable->setCurrentCell(0, 0);
+
+    EditDesign::allDesignForEdit = {};
+
     createActions();
     createContextMenu();
 }
@@ -33,12 +56,14 @@ void EditDesign::createActions()
     deleteDesignButton -> setIcon(deleteIcon);
     connect(deleteDesignButton, &QAbstractButton::clicked, this, &EditDesign::deleteDesign);
 
-    connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
+    //connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
 
     // Update inputSetup and weightedTable each time a different cell is clicked
     //connect(inputSetupTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateInputSetup()));
 
     //connect(weightedTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateWeightedTable()));
+
+    connect(confirmButton, &QAbstractButton::clicked, this, &EditDesign::updateInput);
 
     connect(editDesignTable, SIGNAL(cellChanged(int,int)), this, SLOT(nameChange()));
 
@@ -46,12 +71,28 @@ void EditDesign::createActions()
     connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(designButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
-    // create copy action
-    pasteAct = new QAction(tr("&Copy"), this);
-    pasteAct->setIcon(QIcon(":/images/paste.png"));
-    pasteAct->setShortcut(tr("Ctrl+N"));
-    pasteAct->setStatusTip(tr("Paste into table"));
-    connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
+    // Cut, copy, paste
+    // Do weighted table next
+    cutAction = new QAction(tr("Cu&t"), this);
+    cutAction->setIcon(QIcon(":/images/cut.png"));
+    cutAction->setShortcut(QKeySequence::Cut);
+    cutAction->setStatusTip(tr("Cut the current selection's contents "
+                               "to the clipboard"));
+    connect(cutAction, SIGNAL(triggered()), inputSetupTable, SLOT(cut()));
+
+    copyAction = new QAction(tr("&Copy"), this);
+    copyAction->setIcon(QIcon(":/images/copy.png"));
+    copyAction->setShortcut(QKeySequence::Copy);
+    copyAction->setStatusTip(tr("Copy the current selection's contents "
+                                "to the clipboard"));
+    connect(copyAction, SIGNAL(triggered()), inputSetupTable, SLOT(copy()));
+
+    pasteAction = new QAction(tr("&Paste"), this);
+    pasteAction->setIcon(QIcon(":/images/paste.png"));
+    pasteAction->setShortcut(QKeySequence::Paste);
+    pasteAction->setStatusTip(tr("Paste the clipboard's contents into "
+                                 "the current selection"));
+    connect(pasteAction, SIGNAL(triggered()), inputSetupTable, SLOT(paste()));
 
     populate();
 
@@ -59,28 +100,10 @@ void EditDesign::createActions()
 
 void EditDesign::createContextMenu()
 {
-    //inputSetupTable->addAction(copyAct);
-    inputSetupTable->addAction(pasteAct);
+    inputSetupTable->addAction(cutAction);
+    inputSetupTable->addAction(copyAction);
+    inputSetupTable->addAction(pasteAction);
     inputSetupTable->setContextMenuPolicy(Qt::ActionsContextMenu);
-
-    // TO DO: weighted table
-
-}
-
-void EditDesign::copy()
-{
-    QTableWidgetSelectionRange range = selectedRange();
-     QString str;
-     for (int i = 0; i < range.rowCount(); ++i) {
-     if (i > 0)
-     str += "\n";
-     for (int j = 0; j < range.columnCount(); ++j) {
-     if (j > 0)
-     str += "\t";
-     //str += formula(range.topRow() + i, range.leftColumn() + j);
-     }
-     }
-     QApplication::clipboard()->setText(str);
 }
 
 void EditDesign::addDesign()
@@ -119,42 +142,47 @@ void EditDesign::deleteDesign()
     clearTables();
 }
 
-void EditDesign::updateInputSetup()
+void EditDesign::updateInput()
 {
-    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
-    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
-    warning.exec();
 
-    for( int i = constants::input_row; i > 0; i--)
-    {
-        for ( int j = constants::input_col; j > 0; j--)
-        {
-            //check if any cell is empty
-            //if empty, pop up message box (please complete all required fields in input setup and weighted table)
-            //break
-            double val = inputSetupTable->item(i,j)->text().toDouble();
-            allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j] = val;
-            qDebug() << val;
-        }
-    }
 }
 
-void EditDesign::updateWeightedTable()
-{
-    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
-    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
-    warning.exec();
+//void EditDesign::updateInputSetup()
+//{
+//    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+//    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+//    warning.exec();
 
-    for( int i = constants::weighted_row; i > 0; i--)
-    {
-        for ( int j = constants::weighted_col; j > 0; j--)
-        {
-            double val = weightedTable->item(i,j)->text().toDouble();
-            allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j] = val;
-            qDebug() << val;
-        }
-    }
-}
+//    for( int i = constants::input_row; i > 0; i--)
+//    {
+//        for ( int j = constants::input_col; j > 0; j--)
+//        {
+//            //check if any cell is empty
+//            //if empty, pop up message box (please complete all required fields in input setup and weighted table)
+//            //break
+//            double val = inputSetupTable->item(i,j)->text().toDouble();
+//            allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j] = val;
+//            qDebug() << val;
+//        }
+//    }
+//}
+
+//void EditDesign::updateWeightedTable()
+//{
+//    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+//    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+//    warning.exec();
+
+//    for( int i = constants::weighted_row; i > 0; i--)
+//    {
+//        for ( int j = constants::weighted_col; j > 0; j--)
+//        {
+//            double val = weightedTable->item(i,j)->text().toDouble();
+//            allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j] = val;
+//            qDebug() << val;
+//        }
+//    }
+//}
 
 void EditDesign::updateDesign()
 {
@@ -209,26 +237,14 @@ void EditDesign::nameChange()
         nodeHandler.key() = newDesign;
         allDesignForEdit.insert(std::move(nodeHandler));
 
-        updateDesign();
+        //problem??
+        //updateDesign();
     }
 
 }
 
 void EditDesign::clearTables()
 {
-    //inputSetupTable->setRowCount(0);
-    //weightedTable->setRowCount(0);
-    QStringList inputHeader = {"Min", "Max", "Value"};
-    QStringList weightedHeader = {"Target Value", "Standard Deviation", "Weight"};
-    for (int i=0; i<3; i++)
-    {
-        inputSetupTable->removeColumn(i);
-        weightedTable->removeColumn(i);
-
-        inputSetupTable->insertColumn(i);
-        weightedTable->insertColumn(i);
-    }
-    inputSetupTable->setHorizontalHeaderLabels(inputHeader);
-    weightedTable->setHorizontalHeaderLabels(weightedHeader);
-
+    inputSetupTable->clearContents();
+    weightedTable->clearContents();
 }

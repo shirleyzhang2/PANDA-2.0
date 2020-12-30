@@ -3,33 +3,34 @@
 #include "editdesign.h"
 #include "runanalysis.h"
 #include "printview.h"
+#include "spreadsheet.h"
 
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport>
 #endif
 
-MainWindow::MainWindow(int rows, int cols, QWidget *parent)
+MainWindow::MainWindow(/*int rows, int cols, */QWidget *parent)
     : QMainWindow(parent),
       textEdit(new QPlainTextEdit),
-      table(new QTableWidget(rows, cols, this)),
+      //table(new QTableWidget(rows, cols, this)),
       editdesign(new EditDesign(this)),
       runanalysis(new RunAnalysis(/*&allDesign, */this))
 
 {
-    setCentralWidget(table);
-    table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    constexpr int num_params{ 16 };
-    const char *params[num_params] = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
-
-    for (int i = 0; i < num_params; i++)
-    {
-        table->setHorizontalHeaderItem(i, new QTableWidgetItem(QString(params[i])));
-    }
+    // Set up main table
+    spreadsheet = new Spreadsheet(RowCount,ColumnCount);
+    //setCentralWidget(table);
+    setCentralWidget(spreadsheet);
+    setCurrentFile("");
+    spreadsheet->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
+    spreadsheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    QStringList horizHeader = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
+    spreadsheet->setHorizontalHeaderLabels( horizHeader );
+    spreadsheet->setCurrentCell(0, 0);
 
     // Create checkboxes
 
-    for (int j = 0; j < table->rowCount(); j++)
+    for (int j = 0; j < RowCount; j++)
     {
         QCheckBox * checkB = new QCheckBox(this); //Create checkbox
         checkB->setCheckState(Qt::Unchecked); //Set the status
@@ -39,13 +40,12 @@ MainWindow::MainWindow(int rows, int cols, QWidget *parent)
         hLayout->setMargin(0); //Set the edge distance otherwise it will be difficult to see
         hLayout->setAlignment(checkB, Qt::AlignCenter); //Center
         w->setLayout(hLayout); //Set the layout of the widget
-        constexpr int checkbox_loc{ 15 }; //Set checkbox location
-        table->setCellWidget(j, checkbox_loc, w); //Place the widget in the table
-
+        constexpr int checkbox_loc{ ColumnCount-1 }; //Set checkbox location
+        spreadsheet->setCellWidget(j, checkbox_loc, w); //Place the widget in the table
     }
 
     createActions();
-    createContextMenu();
+
     createStatusBar();
     readSettings();
 
@@ -191,21 +191,21 @@ void MainWindow::createActions()
 
     const QIcon analysisIcon = QIcon(":/images/analyze.png");
     QAction *analysisAct = new QAction(analysisIcon, tr("&Run Analysis"), this);
-    analysisAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
+    analysisAct->setStatusTip(tr("Analyze inputs and display most optimal design"));
     connect(analysisAct, &QAction::triggered, this, &MainWindow::analysis);
     designMenu->addAction(analysisAct);
     designToolBar->addAction(analysisAct);
 
     const QIcon rankIcon = QIcon(":/images/rank.png");
     QAction *rankAct = new QAction(rankIcon, tr("&Rank Designs"), this);
-    rankAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
+    rankAct->setStatusTip(tr("Rank designs"));
     connect(rankAct, &QAction::triggered, this, &MainWindow::rank);
     designMenu->addAction(rankAct);
     designToolBar->addAction(rankAct);
 
     const QIcon meshIcon = QIcon(":/images/mesh.png");
     QAction *meshAct = new QAction(meshIcon, tr("&Generate Mesh"), this);
-    meshAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
+    meshAct->setStatusTip(tr("Mesh selected designs and create output files"));
     connect(meshAct, &QAction::triggered, this, &MainWindow::mesh);
     designMenu->addAction(meshAct);
     designToolBar->addAction(meshAct);
@@ -224,13 +224,7 @@ void MainWindow::createActions()
 
 //TO DO: separate create actions function into create tool bar, create menu etc.
 
-void MainWindow::createContextMenu()
-{
-    table->addAction(copyAct);
-    table->addAction(pasteAct);
-    table->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-}
 
 void MainWindow::createStatusBar()
 
@@ -284,7 +278,7 @@ void MainWindow::print()
     QPrinter printer(QPrinter::ScreenResolution);
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
-    view.setModel(table->model());
+    view.setModel(spreadsheet->model());
     connect(&dlg, &QPrintPreviewDialog::paintRequested, &view, &PrintView::print);
     dlg.exec();
 #endif

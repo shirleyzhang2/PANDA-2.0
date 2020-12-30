@@ -1,6 +1,7 @@
 #include "runanalysis.h"
 #include "editdesign.h"
 #include "model.h"
+#include "spreadsheet.h"
 #include <QWidget>
 #include <QtWidgets>
 #include <iostream>
