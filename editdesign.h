@@ -35,10 +35,12 @@ private:
     QAction *cutAction;
     QAction *copyAction;
     QAction *pasteAction;
+    QAction *deleteAction;
 
 private slots:
     void createActions();
     void createContextMenu();
+    void tabSelected();
     void addDesign();
     void deleteDesign();
     void updateInput();

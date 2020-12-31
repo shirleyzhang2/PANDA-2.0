@@ -2,7 +2,7 @@
 #include <QtWidgets>
 
 #include "cell.h"
-#include "spreadsheet.h"
+#include "inputspreadsheet.h"
 
 Spreadsheet::Spreadsheet(int rows, int cols, QWidget *parent)
     : QTableWidget(parent)
@@ -146,7 +146,6 @@ void Spreadsheet::cut()
 void Spreadsheet::copy()
 {
     QTableWidgetSelectionRange range = selectedRange();
-    // str gets overwritten by ""!
     QString str;
 
     for (int i = 0; i < range.rowCount(); ++i) {
