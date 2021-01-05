@@ -8,9 +8,9 @@
 class Model
 {
 public:
-    double inputSetupInfo[constants::input_row][constants::input_col]{ };
-    double weightedTableInfo[constants::weighted_row][constants::weighted_col]{ };
-    std::string optimal[constants::optimal_col]{ };
+    double inputSetupInfo[constants::input_row][constants::input_col] = {0};
+    double weightedTableInfo[constants::weighted_row][constants::weighted_col] = {0};
+    std::string optimal[constants::optimal_col] = {};
     Model();
 };
 

@@ -5,7 +5,8 @@
 #include <QtWidgets>
 #include <iostream>
 
-std::map <std::string, Model> EditDesign::allDesignForEdit;
+std::map <std::string, Model> EditDesign::allDesignForEdit {};
+std::map <std::string, Model> EditDesign::allDesignCopy {};
 
 //! [0]
 EditDesign::EditDesign(QWidget *parent)
@@ -14,26 +15,26 @@ EditDesign::EditDesign(QWidget *parent)
     setupUi(this);
 
     // Input Setup
-    inputSetupTable = new Spreadsheet(13,3);
+    inputSetupTable = new Spreadsheet(/*numInputHeaderV*/0,numInputHeaderH);
     tabWidget->addTab(inputSetupTable, "Input Setup");
     //inputSetupTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     inputSetupTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     //inputSetupTable->horizontalHeader()->setStretchLastSection(true);
     inputSetupTable->setHorizontalHeaderLabels( inputHeaderH );
-    inputSetupTable->setVerticalHeaderLabels( inputHeaderV );
-    inputSetupTable->setCurrentCell(0, 0);
+    //inputSetupTable->setVerticalHeaderLabels( inputHeaderV );
+    //inputSetupTable->setCurrentCell(0,0);
 
     // Weighted Table
-    weightedTable = new Spreadsheet(9,3);
+    weightedTable = new Spreadsheet(/*numWeightedHeaderV*/0,numWeightedHeaderH);
     tabWidget->addTab(weightedTable, "Weighted Table");
     //weightedTable->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     weightedTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     //weightedTable->horizontalHeader()->setStretchLastSection(true);
     weightedTable->setHorizontalHeaderLabels( weightedHeaderH );
-    weightedTable->setVerticalHeaderLabels( weightedHeaderV );
-    weightedTable->setCurrentCell(0, 0);
+    //weightedTable->setVerticalHeaderLabels( weightedHeaderV );
+    //weightedTable->setCurrentCell(0, 0);
 
-    EditDesign::allDesignForEdit = {};
+    //allDesignForEdit = {};
 
     createActions();
     createContextMenu();
@@ -42,6 +43,7 @@ EditDesign::EditDesign(QWidget *parent)
 void EditDesign::setDesignForEdit(std::map <std::string, Model> &alldesign)
 {
     allDesignForEdit = alldesign;
+    allDesignCopy = allDesignForEdit;
 }
 
 void EditDesign::createActions()
@@ -54,16 +56,22 @@ void EditDesign::createActions()
 
     const QIcon deleteIcon = QIcon(":/images/delete.png");
     deleteDesignButton -> setIcon(deleteIcon);
-    connect(deleteDesignButton, &QAbstractButton::clicked, this, &EditDesign::deleteDesign);
+    //connect(deleteDesignButton, &QAbstractButton::clicked, this, &EditDesign::deleteDesign);
 
-    //connect(editDesignTable, SIGNAL(itemClicked()), this, SLOT(updateDesign()));
+    connect(editDesignTable, SIGNAL(itemClicked(QTableWidgetItem* item)), this, SLOT(updateDesign()));
 
-    connect(confirmButton, &QAbstractButton::clicked, this, &EditDesign::updateInput);
+    connect(templateButton, &QAbstractButton::clicked, this, &EditDesign::addTemplate);
 
-    connect(editDesignTable, SIGNAL(cellChanged(int,int)), this, SLOT(nameChange()));
+    //connect(inputSetupTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateInput()));
+    connect(inputSetupTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateInput()));
+    connect(weightedTable, SIGNAL(itemSelectionChanged()), this, SLOT(updateWeighted()));
+
+    //connect(editDesignTable, SIGNAL(cellChanged(int,int)), this, SLOT(nameChange()));
 
     // Set ok and cancel buttons
-    connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    //connect(designButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(designButtonBox, SIGNAL(accepted()), this, SLOT(save()));
+    connect(designButtonBox, SIGNAL(accepted()), this, SLOT(close()));
     connect(designButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
     // Check current tab
@@ -153,6 +161,11 @@ void EditDesign::tabSelected(){
     }
 }
 
+void EditDesign::save()
+{
+    allDesignForEdit = allDesignCopy;
+}
+
 void EditDesign::addDesign()
 {
     // TO DO: check if design has been confirmed (table filled out, button pressed)
@@ -160,95 +173,230 @@ void EditDesign::addDesign()
     static std::string name;
     name = "New Design "+std::to_string(id);
 
-    auto iter = allDesignForEdit.begin();
-    while (iter != allDesignForEdit.end())
+    auto iter = allDesignCopy.begin();
+    while (iter != allDesignCopy.end())
     {
         id += 1;
         ++iter;
         name = "New Design "+std::to_string(id);
     }
-    allDesignForEdit[name] = Model();
+    allDesignCopy[name] = Model();
     currDesignForEdit = name;
 
+    //clearTables();
     populate();
-    clearTables();
+    inputSetupTable->blockSignals(true);
+    inputSetupTable->model()->removeRows(0,inputSetupTable->rowCount());
+    inputSetupTable->blockSignals(false);
+    weightedTable->blockSignals(true);
+    weightedTable->model()->removeRows(0,weightedTable->rowCount());
+    weightedTable->blockSignals(false);
+//    inputSetupTable->clearContents();
+//    weightedTable->clearContents();
+    //updateDesign();
+    //updateInput();
+    //updateWeighted();
+
 }
 
 void EditDesign::deleteDesign()
 {
-    //Add warning to prevent user from deleting the last design
     QList<QTableWidgetSelectionRange> sRangeList = editDesignTable->selectedRanges();
     for(const auto &p : qAsConst(sRangeList))
     {
         for (auto i = p.topRow() + p.rowCount() - 1; i > p.topRow() - 1; i--)
         {
             std::string key = editDesignTable->item(i,0)->text().toStdString();
-            allDesignForEdit.erase(key);
+            allDesignCopy.erase(key);
             editDesignTable->removeRow(i);
         }
     }
-    clearTables();
+    //clearTables();
+    inputSetupTable->model()->removeRows(0,inputSetupTable->rowCount());
+    weightedTable->model()->removeRows(0,weightedTable->rowCount());
+}
+
+void EditDesign::updateDesign()
+{
+    qDebug() << "Update Design clicked";
+    if (currDesignForEdit != "")
+    {
+        //inputSetupTable->model()->removeRows(0,inputSetupTable->rowCount());
+        //weightedTable->model()->removeRows(0,weightedTable->rowCount());
+        //inputSetupTable->clearContents();
+        //weightedTable->clearContents();
+
+        currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+        qDebug() << editDesignTable->currentItem()->text();
+
+        inputSetupTable->blockSignals(true);
+        for (int i = 0; i < numInputHeaderH; ++i)
+        {
+            for (int j = 0; j < numInputHeaderV; ++j)
+            {
+                //inputSetupTable->insertRow(j);
+                double numInput = allDesignCopy[currDesignForEdit].inputSetupInfo[i][j];
+                qDebug() << numInput;
+                //newInputUpdate = QTableWidgetItem(QString::number(numInput));
+                //inputSetupTable->setItem(i,j, newInputUpdate);
+                inputSetupTable->setItem(i,j, new QTableWidgetItem(QString::number(numInput)));
+            }
+        }
+        inputSetupTable->blockSignals(false);
+
+        weightedTable->blockSignals(true);
+        for (int i = 0; i < numWeightedHeaderH; ++i)
+        {
+            for (int j = 0; j < numWeightedHeaderV; ++j)
+            {
+                //weightedTable->insertRow(j);
+                double numWeighted = allDesignCopy[currDesignForEdit].weightedTableInfo[i][j];
+                qDebug() << numWeighted;
+                //QTableWidgetItem *newWeightedUpdate = new QTableWidgetItem(QString::number(numWeighted));
+                //weightedTable->setItem(i,j, newWeightedUpdate);
+                weightedTable->setItem(i,j, new QTableWidgetItem(QString::number(numWeighted)));
+            }
+        }
+        weightedTable->blockSignals(false);
+    }
+
+}
+
+void EditDesign::addTemplate()
+{
+    inputSetupTable->blockSignals(true);
+
+    inputSetupTable->setRowCount(numInputHeaderV);
+    inputSetupTable->setVerticalHeaderLabels( inputHeaderV );
+    for (int i = 0; i < numInputHeaderV; ++i)
+    {
+        for (int j = 0; j < numInputHeaderH; ++j)
+        {
+            //QTableWidgetItem *zeroInput = new QTableWidgetItem(QString::number(0)); //convert from integer
+            //inputSetupTable->setItem(i, j, zeroInput); //set object
+            inputSetupTable->setItem(i, j, new QTableWidgetItem(QString::number(0)));
+        }
+    }
+    updateInput();
+
+    inputSetupTable->blockSignals(false);
+
+    weightedTable->blockSignals(true);
+
+    weightedTable->setRowCount(numWeightedHeaderV);
+    weightedTable->setVerticalHeaderLabels( weightedHeaderV );
+    for (int i = 0; i < numWeightedHeaderV; ++i)
+    {
+        for (int j = 0; j < numWeightedHeaderH; ++j)
+        {
+            //QTableWidgetItem *zeroWeighted = new QTableWidgetItem(QString::number(0)); //convert from integer
+            //weightedTable->setItem(i, j, zeroWeighted); //set object
+            weightedTable->setItem(i, j, new QTableWidgetItem(QString::number(0)));
+        }
+    }
+    updateWeighted();
+
+    weightedTable->blockSignals(false);
 }
 
 void EditDesign::updateInput()
 {
-    QTableWidgetItem *design =editDesignTable->item(0,0);
-    if (!design || design->text().isEmpty())
-    {
-        WarningMessage warning("Please add a new design first!");
-        warning.exec();
-        return;
-    }
-    else
+    qDebug() << "update input";
+    if (currDesignForEdit != "")
     {
         currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+        qDebug() << editDesignTable->currentItem()->text();
 
-        // Input setup
-        for( int i = 0; i < constants::input_row; ++i)
+        for( int i = 0; i < numInputHeaderV; ++i)
         {
-            for ( int j = 0; j < constants::input_col; ++j)
+            for ( int j = 0; j < numInputHeaderH; ++j)
             {
-                QTableWidgetItem *input =inputSetupTable->item(i,j);
-                if (!input || input->text().isEmpty())
-                {
-                    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
-                    warning.exec();
-                    return;
-                }
-                else
-                {
-                    allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j] = input->text().toDouble();
-                    //qDebug() << allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j];
-                }
+                //QTableWidgetItem *input =inputSetupTable->item(i,j);
+                //allDesignCopy[currDesignForEdit].inputSetupInfo[i][j] = input->text().toDouble();
+                allDesignCopy[currDesignForEdit].inputSetupInfo[i][j] = inputSetupTable->item(i,j)->text().toDouble();
             }
         }
-
-        // Weighted table
-        for( int i = 0; i < constants::weighted_row; ++i)
-        {
-            for ( int j = 0; j < constants::weighted_col; ++j)
-            {
-                QTableWidgetItem *weighted =weightedTable->item(i,j);
-                if (!weighted || weighted->text().isEmpty())
-                {
-                    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
-                    warning.exec();
-                    return;
-                }
-                else
-                {
-                    allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j] = weighted->text().toDouble();
-                    qDebug() << allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j];
-                }
-            }
-        }
-
     }
-
-
 }
 
-//void EditDesign::updateWeightedTable()
+void EditDesign::updateWeighted()
+{
+    if (currDesignForEdit != "")
+    {
+        currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+        qDebug() << editDesignTable->currentItem()->text();
+
+        for( int i = 0; i < numWeightedHeaderV; ++i)
+        {
+            for ( int j = 0; j < numWeightedHeaderH; ++j)
+            {
+                //QTableWidgetItem *weighted =weightedTable->item(i,j);
+                //allDesignCopy[currDesignForEdit].weightedTableInfo[i][j] = weighted->text().toDouble();
+                allDesignCopy[currDesignForEdit].weightedTableInfo[i][j] = weightedTable->item(i,j)->text().toDouble();
+
+            }
+        }
+    }
+}
+
+
+//    QTableWidgetItem *design =editDesignTable->item(0,0);
+//    if (!design || design->text().isEmpty())
+//    {
+//        WarningMessage warning("Please add a new design first!");
+//        warning.exec();
+//        return;
+//    }
+//    else
+//    {
+//        currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
+
+//        // Input setup
+//        for( int i = 0; i < constants::input_row; ++i)
+//        {
+//            for ( int j = 0; j < constants::input_col; ++j)
+//            {
+//                QTableWidgetItem *input =inputSetupTable->item(i,j);
+//                if (!input || input->text().isEmpty())
+//                {
+//                    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+//                    warning.exec();
+//                    return;
+//                }
+//                else
+//                {
+//                    allDesignCopy[currDesignForEdit].inputSetupInfo[i][j] = input->text().toDouble();
+//                    confirmed = true;
+//                    //qDebug() << allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j];
+//                }
+//            }
+//        }
+
+//        // Weighted table
+//        for( int i = 0; i < constants::weighted_row; ++i)
+//        {
+//            for ( int j = 0; j < constants::weighted_col; ++j)
+//            {
+//                QTableWidgetItem *weighted =weightedTable->item(i,j);
+//                if (!weighted || weighted->text().isEmpty())
+//                {
+//                    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
+//                    warning.exec();
+//                    return;
+//                }
+//                else
+//                {
+//                    allDesignCopy[currDesignForEdit].weightedTableInfo[i][j] = weighted->text().toDouble();
+//                    qDebug() << allDesignCopy[currDesignForEdit].weightedTableInfo[i][j];
+//                }
+//            }
+//        }
+
+//    }
+//}
+
+
+//void EditDesign::updateWeighted()
 //{
 //    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 //    WarningMessage warning("Please complete all required fields in input setup and weighted table before updating design");
@@ -265,67 +413,78 @@ void EditDesign::updateInput()
 //    }
 //}
 
-void EditDesign::updateDesign()
-{
-    clearTables();
-    currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
-
-    for (int i = 0; i < constants::input_row; ++i)
-    {
-            for (int j = 0; j < constants::input_col; ++j)
-            {
-                inputSetupTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].inputSetupInfo[i][j]));
-            }
-    }
-
-    for (int i = 0; i < constants::weighted_row; ++i)
-    {
-            for (int j = 0; j < constants::weighted_col; ++j)
-            {
-                weightedTable->setItem(i,j, new QTableWidgetItem(allDesignForEdit[currDesignForEdit].weightedTableInfo[i][j]));
-            }
-    }
-}
-
 
 void EditDesign::populate()
 {
     editDesignTable->model()->removeRows(0,editDesignTable->rowCount());
-    for (const auto& [key, value] : allDesignForEdit)
+    for (const auto& [key, value] : allDesignCopy)
     {
         int row = editDesignTable->rowCount();
         editDesignTable->insertRow(row);
-        QTableWidgetItem *newItem = new QTableWidgetItem(QString::fromStdString(key));
-
-        editDesignTable->setItem(row, 0, newItem);
-        editDesignTable->setCurrentItem(newItem);
+        //QTableWidgetItem *newDesign = new QTableWidgetItem(QString::fromStdString(key));
+        //editDesignTable->setItem(row, 0, newDesign);
+        //editDesignTable->setCurrentItem(newDesign);
+        editDesignTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(key)));
+        QModelIndex newIndex  = editDesignTable->model()->index(row,0);
+        editDesignTable->selectionModel()->select(newIndex, QItemSelectionModel::Select);
+        editDesignTable->setCurrentIndex(newIndex);
+        //editDesignTable->setCurrentItem(new QTableWidgetItem(QString::fromStdString(key)));
         currDesignForEdit = editDesignTable->currentItem()->text().toStdString();
 
-        qDebug() << QString::fromStdString(key);
     }
 }
 
 void EditDesign::nameChange()
 {
     //qDebug() << QString::fromStdString(currDesign);
-    int row = editDesignTable->currentRow();
-    // This if statements prevents program from crashing when adding new rows
-    if (row != -1)
-    {
-        const std::string newDesign = editDesignTable->currentItem()->text().toStdString();
+    int row = editDesignTable->currentRow(); //returns -1 when populating empty table
 
-        auto nodeHandler = allDesignForEdit.extract(currDesignForEdit);
-        nodeHandler.key() = newDesign;
-        allDesignForEdit.insert(std::move(nodeHandler));
+    if (row != -1/* && currDesignForEdit != ""*/)
+    {
+        std::string newName = editDesignTable->currentItem()->text().toStdString();
+        if (newName == "")
+        {
+            WarningMessage warning("Name cannot be empty!");
+            warning.exec();
+            return;
+        }
+
+        // assign original parameters to new name
+        auto nodeHandler = allDesignCopy.extract(currDesignForEdit);
+        nodeHandler.key() = newName;
+        allDesignCopy.insert(std::move(nodeHandler));
 
         //problem??
-        //updateDesign();
+        updateDesign();
     }
 
 }
 
-void EditDesign::clearTables()
-{
-    inputSetupTable->clearContents();
-    weightedTable->clearContents();
-}
+//void EditDesign::clearTables()
+//{
+//    //inputSetupTable->clearContents();
+//    qDebug() << "clear Tables";
+//    qDebug() << QString::fromStdString(currDesignForEdit);
+//    for (int i = 0; i < numInputHeaderV; ++i)
+//    {
+//            for (int j = 0; j < numInputHeaderH; ++j)
+//            {
+//                QTableWidgetItem *zeroInput = new QTableWidgetItem(QString::number(0)); //convert from integer
+//                inputSetupTable->setItem(i, j, zeroInput); //set object
+//                allDesignCopy[currDesignForEdit].inputSetupInfo[i][j] = 0;
+//                //qDebug() << allDesignCopy[currDesignForEdit].inputSetupInfo[i][j];
+//            }
+//    }
+
+//    //weightedTable->clearContents();
+//    for (int i = 0; i < numWeightedHeaderV; ++i)
+//    {
+//            for (int j = 0; j < numWeightedHeaderH; ++j)
+//            {
+//                QTableWidgetItem *zeroWeighted = new QTableWidgetItem(QString::number(0)); //convert from integer
+//                weightedTable->setItem(i, j, zeroWeighted); //set object
+//                allDesignCopy[currDesignForEdit].weightedTableInfo[i][j] = 0;
+//                //qDebug() << allDesignCopy[currDesignForEdit].weightedTableInfo[i][j];
+//            }
+//    }
+//}
