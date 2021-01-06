@@ -58,7 +58,7 @@ void EditDesign::createActions()
     deleteDesignButton -> setIcon(deleteIcon);
     //connect(deleteDesignButton, &QAbstractButton::clicked, this, &EditDesign::deleteDesign);
 
-    connect(editDesignTable, SIGNAL(itemClicked(QTableWidgetItem* item)), this, SLOT(updateDesign()));
+    connect(editDesignTable, SIGNAL(cellClicked(int,int)), this, SLOT(updateDesign()));
 
     connect(templateButton, &QAbstractButton::clicked, this, &EditDesign::addTemplate);
 
@@ -188,6 +188,7 @@ void EditDesign::addDesign()
     inputSetupTable->blockSignals(true);
     inputSetupTable->model()->removeRows(0,inputSetupTable->rowCount());
     inputSetupTable->blockSignals(false);
+
     weightedTable->blockSignals(true);
     weightedTable->model()->removeRows(0,weightedTable->rowCount());
     weightedTable->blockSignals(false);
@@ -237,9 +238,9 @@ void EditDesign::updateDesign()
                 //inputSetupTable->insertRow(j);
                 double numInput = allDesignCopy[currDesignForEdit].inputSetupInfo[i][j];
                 qDebug() << numInput;
-                //newInputUpdate = QTableWidgetItem(QString::number(numInput));
-                //inputSetupTable->setItem(i,j, newInputUpdate);
-                inputSetupTable->setItem(i,j, new QTableWidgetItem(QString::number(numInput)));
+                QTableWidgetItem *newInputUpdate = new QTableWidgetItem(QString::number(numInput));
+                inputSetupTable->setItem(i,j, newInputUpdate);
+                //inputSetupTable->setItem(i,j, new QTableWidgetItem(QString::number(numInput)));
             }
         }
         inputSetupTable->blockSignals(false);
@@ -252,9 +253,9 @@ void EditDesign::updateDesign()
                 //weightedTable->insertRow(j);
                 double numWeighted = allDesignCopy[currDesignForEdit].weightedTableInfo[i][j];
                 qDebug() << numWeighted;
-                //QTableWidgetItem *newWeightedUpdate = new QTableWidgetItem(QString::number(numWeighted));
-                //weightedTable->setItem(i,j, newWeightedUpdate);
-                weightedTable->setItem(i,j, new QTableWidgetItem(QString::number(numWeighted)));
+                QTableWidgetItem *newWeightedUpdate = new QTableWidgetItem(QString::number(numWeighted));
+                weightedTable->setItem(i,j, newWeightedUpdate);
+                //weightedTable->setItem(i,j, new QTableWidgetItem(QString::number(numWeighted)));
             }
         }
         weightedTable->blockSignals(false);
@@ -436,6 +437,7 @@ void EditDesign::populate()
 
 void EditDesign::nameChange()
 {
+    editDesignTable->blockSignals(true);
     //qDebug() << QString::fromStdString(currDesign);
     int row = editDesignTable->currentRow(); //returns -1 when populating empty table
 
@@ -455,6 +457,8 @@ void EditDesign::nameChange()
         allDesignCopy.insert(std::move(nodeHandler));
 
         //problem??
+        editDesignTable->blockSignals(false);
+
         updateDesign();
     }
 
