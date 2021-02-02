@@ -15,5 +15,6 @@
         <file>images/save.png</file>
         <file>images/add.png</file>
         <file>images/exit.png</file>
+        <file>images/results.png</file>
     </qresource>
 </RCC>

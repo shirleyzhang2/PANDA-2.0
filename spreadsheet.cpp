@@ -169,7 +169,8 @@ void Spreadsheet::paste()
     QStringList rows = str.split('\n');
     int numRows = rows.count();
     // delete empty row at the end when copying from Excel
-    if (rows.at(numRows - 1) == "")
+    // except when copying 1 empty cell
+    if (numRows > 1 && rows.at(numRows - 1) == "")
     {
         rows.removeLast();
         numRows = rows.count();

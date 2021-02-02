@@ -1,7 +1,7 @@
 #include <QtWidgets>
 #include "mainwindow.h"
-#include "editdesign.h"
-#include "runanalysis.h"
+//#include "editdesign.h"
+//#include "runanalysis.h"
 #include "printview.h"
 #include "spreadsheet.h"
 
@@ -11,47 +11,38 @@
 
 MainWindow::MainWindow(/*int rows, int cols, */QWidget *parent)
     : QMainWindow(parent),
-      textEdit(new QPlainTextEdit),
-      //table(new QTableWidget(rows, cols, this)),
-      editdesign(new EditDesign(this)),
-      runanalysis(new RunAnalysis(/*&allDesign, */this))
+      central_widget(new QTabWidget)
+      //runanalysis(new RunAnalysis(this))
 
 {
+    //central_widget = new QTabWidget;
     // Set up main table
-    spreadsheet = new Spreadsheet(RowCount,ColumnCount);
-    //setCentralWidget(table);
-    setCentralWidget(spreadsheet);
-    setCurrentFile("");
-    spreadsheet->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
-    spreadsheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    QStringList horizHeader = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
-    spreadsheet->setHorizontalHeaderLabels( horizHeader );
-    spreadsheet->setCurrentCell(0, 0);
+    inputSpreadsheet = new Spreadsheet(numInputHeaderV,numInputHeaderH);
+    central_widget->addTab(inputSpreadsheet, "Input Setup");
+    inputSpreadsheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    inputSpreadsheet->setHorizontalHeaderLabels( inputHeaderH );
+    inputSpreadsheet->setVerticalHeaderLabels( inputHeaderV );
+    //inputSpreadsheet->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
 
-    // Create checkboxes
+    weightedSpreadsheet = new Spreadsheet(numWeightedHeaderV,numWeightedHeaderH);
+    central_widget->addTab(weightedSpreadsheet, "Weighted Table");
+    weightedSpreadsheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    weightedSpreadsheet->setHorizontalHeaderLabels( weightedHeaderH );
+    weightedSpreadsheet->setVerticalHeaderLabels( weightedHeaderV );
+    //weightedSpreadsheet->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
 
-    for (int j = 0; j < RowCount; j++)
-    {
-        QCheckBox * checkB = new QCheckBox(this); //Create checkbox
-        checkB->setCheckState(Qt::Unchecked); //Set the status
-        QWidget *w = new QWidget(this); //Create a widget
-        QHBoxLayout *hLayout = new QHBoxLayout(); //Create layout
-        hLayout->addWidget(checkB); //Add checkbox
-        hLayout->setMargin(0); //Set the edge distance otherwise it will be difficult to see
-        hLayout->setAlignment(checkB, Qt::AlignCenter); //Center
-        w->setLayout(hLayout); //Set the layout of the widget
-        constexpr int checkbox_loc{ ColumnCount-1 }; //Set checkbox location
-        spreadsheet->setCellWidget(j, checkbox_loc, w); //Place the widget in the table
-    }
+    setCentralWidget(central_widget);
+
+    //QStringList horizHeader = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
 
     createActions();
-
+    createContextMenu();
     createStatusBar();
     readSettings();
 
     setWindowTitle("UT Concrete Canoe - PANDA + POSSUM");
     setWindowIcon(QIcon(":/images/canoe_logo.png"));
-    setCurrentFile(QString());
+    //setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
@@ -94,52 +85,63 @@ void MainWindow::parameters()
                "<b>n</b> = Cross-section shape parameter<br>"));
 }
 
-void MainWindow::design()
-{
-    //EditDesign editDesign(this);
-    editdesign->setDesignForEdit(allDesign);
-    editdesign->exec();
-    allDesign = editdesign->getDesign();
-
-    for (const auto& [key, value] : allDesign)
-    {
-        qDebug() << QString::fromStdString(key);
-    }
-}
-
 void MainWindow::analysis()
 {
-    for (const auto& [key, value] : allDesign)
-    {
-        qDebug() << QString::fromStdString(key);
+//    Check if every cell has been filled
+//    for(int i=0; i < inputSpreadsheet->rowCount(); i++)
+//    {
+//        for(int j=0; j < inputSpreadsheet->columnCount(); j++)
+//        {
+//            bool flag = inputSpreadsheet->item(i,j)->text().isNull();
+
+//            if (!flag) /* the cell is not empty */
+//            {
+//                // do stuff
+//            }
+//            else /* the cell is empty */
+//            {
+//                // do stuff
+//            }
+//        }
+//    }
+    QMessageBox::StandardButton analysisDialog;
+    analysisDialog = QMessageBox::question(this, "Analysis", "Run analysis?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (analysisDialog == QMessageBox::Yes) {
+      qDebug() << "Yes was clicked";
+
+      //QApplication::quit();
+      createInputTable();
+    } else {
+      qDebug() << "Yes was *not* clicked";
     }
     //RunAnalysis runanalysis(this);
-    runanalysis->setDesign(allDesign);
-    runanalysis->exec();
-}
-
-void MainWindow::rank()
-{
-    QMessageBox::about(this, tr("Rank Designs"),
-              tr(""));
 }
 
 void MainWindow::mesh()
 {
-    QMessageBox::about(this, tr("Mesh"),
-              tr(""));
+    QMessageBox::StandardButton meshDialog;
+    meshDialog = QMessageBox::question(this, "Mesh", "Generate mesh?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (meshDialog == QMessageBox::Yes) {
+      qDebug() << "Yes was clicked";
+      //QApplication::quit();
+    } else {
+      qDebug() << "Yes was *not* clicked";
+    }
 }
 
-void MainWindow::documentWasModified()
+void MainWindow::final()
 {
-    setWindowModified(textEdit->document()->isModified());
+
 }
 
 void MainWindow::createActions()
 {
+    // Identify current tab
+    connect(central_widget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
 
     // File: Exit, Print
-
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     QToolBar *fileToolBar = addToolBar(tr("File"));
 
@@ -157,55 +159,69 @@ void MainWindow::createActions()
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
 
-    // Edit: Copy, Paste
+    // Edit: Cut, copy, paste, delete
 
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
     QToolBar *editToolBar = addToolBar(tr("Edit"));
 
-    const QIcon copyIcon = QIcon(":/images/copy.png");
-    QAction *copyAct = new QAction(copyIcon, tr("&Copy"), this);
-    copyAct->setStatusTip(tr("Copy selected cells"));
-    connect(copyAct, &QAction::triggered, this, &MainWindow::copy);
-    editMenu->addAction(copyAct);
-    editToolBar->addAction(copyAct);
+    cutAction = new QAction(tr("Cu&t"), this);
+    cutAction->setIcon(QIcon(":/images/cut.png"));
+    cutAction->setShortcut(QKeySequence::Cut);
+    cutAction->setStatusTip(tr("Cut the current selection's contents "
+                               "to the clipboard"));
+    connect(cutAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(cut()));
+    editMenu->addAction(cutAction);
+    editToolBar->addAction(cutAction);
 
-//    should not let user modify main table
-//    const QIcon pasteIcon = QIcon(":/images/paste.png");
-//    QAction *pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
-//    pasteAct->setStatusTip(tr("Paste to spreadsheet"));
-//    connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
-//    editMenu->addAction(pasteAct);
-//    editToolBar->addAction(pasteAct);
+    copyAction = new QAction(tr("&Copy"), this);
+    copyAction->setIcon(QIcon(":/images/copy.png"));
+    copyAction->setShortcut(QKeySequence::Copy);
+    copyAction->setStatusTip(tr("Copy the current selection's contents "
+                                "to the clipboard"));
+    connect(copyAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(copy()));
+    editMenu->addAction(copyAction);
+    editToolBar->addAction(copyAction);
 
-    // Design: Edit Design, Run Analysis, Rank Designs, Generate Mesh
+    pasteAction = new QAction(tr("&Paste"), this);
+    pasteAction->setIcon(QIcon(":/images/paste.png"));
+    pasteAction->setShortcut(QKeySequence::Paste);
+    pasteAction->setStatusTip(tr("Paste the clipboard's contents into "
+                                 "the current selection"));
+    connect(pasteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(paste()));
+    editMenu->addAction(pasteAction);
+    editToolBar->addAction(pasteAction);
+
+    deleteAction = new QAction(tr("&Delete"), this);
+    deleteAction->setIcon(QIcon(":/images/delete.png"));
+    deleteAction->setShortcut(QKeySequence::Delete);
+    deleteAction->setStatusTip(tr("Delete the current selection's "
+                                  "contents"));
+    connect(deleteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(del()));
+    editMenu->addAction(deleteAction);
+    editToolBar->addAction(deleteAction);
+
+    // Design: Run Analysis, Show Results, Generate Mesh
 
     QMenu *designMenu = menuBar()->addMenu(tr("&Design"));
     QToolBar *designToolBar = addToolBar(tr("Design"));
 
-    const QIcon designIcon = QIcon(":/images/design.png");
-    QAction *designAct = new QAction(designIcon, tr("&Edit Design"), this);
-    designAct->setStatusTip(tr("Edit Input Setup and Weighted Table"));
-    connect(designAct, &QAction::triggered, this, &MainWindow::design);
-    designMenu->addAction(designAct);
-    designToolBar->addAction(designAct);
-
     const QIcon analysisIcon = QIcon(":/images/analyze.png");
     QAction *analysisAct = new QAction(analysisIcon, tr("&Run Analysis"), this);
-    analysisAct->setStatusTip(tr("Analyze inputs and display most optimal design"));
+    analysisAct->setStatusTip(tr("Iterate design options based on input setup and weighted table"));
     connect(analysisAct, &QAction::triggered, this, &MainWindow::analysis);
     designMenu->addAction(analysisAct);
     designToolBar->addAction(analysisAct);
 
-    const QIcon rankIcon = QIcon(":/images/rank.png");
-    QAction *rankAct = new QAction(rankIcon, tr("&Rank Designs"), this);
-    rankAct->setStatusTip(tr("Rank designs"));
-    connect(rankAct, &QAction::triggered, this, &MainWindow::rank);
-    designMenu->addAction(rankAct);
-    designToolBar->addAction(rankAct);
+    const QIcon finalIcon = QIcon(":/images/results.png");
+    QAction *finalAct = new QAction(finalIcon, tr("&Show Results"), this);
+    finalAct->setStatusTip(tr("Chose final design with best score"));
+    connect(finalAct, &QAction::triggered, this, &MainWindow::final);
+    designMenu->addAction(finalAct);
+    designToolBar->addAction(finalAct);
 
     const QIcon meshIcon = QIcon(":/images/mesh.png");
     QAction *meshAct = new QAction(meshIcon, tr("&Generate Mesh"), this);
-    meshAct->setStatusTip(tr("Mesh selected designs and create output files"));
+    meshAct->setStatusTip(tr("Mesh final design and create output files"));
     connect(meshAct, &QAction::triggered, this, &MainWindow::mesh);
     designMenu->addAction(meshAct);
     designToolBar->addAction(meshAct);
@@ -221,10 +237,52 @@ void MainWindow::createActions()
 
 }
 
+// Clear selection in table not located in current tab
+void MainWindow::tabSelected(){
+
+    // connect and disconnect signals depending on which tab is active
+    if(central_widget->currentIndex() == 0){
+
+        connect(cutAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(cut()));
+        connect(copyAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(copy()));
+        connect(pasteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(paste()));
+        connect(deleteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(del()));
+
+        disconnect(cutAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(cut()));
+        disconnect(copyAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(copy()));
+        disconnect(pasteAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(paste()));
+        disconnect(deleteAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(del()));
+
+    }
+    if(central_widget->currentIndex() == 1){
+
+        connect(cutAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(cut()));
+        connect(copyAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(copy()));
+        connect(pasteAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(paste()));
+        connect(deleteAction, SIGNAL(triggered()), weightedSpreadsheet, SLOT(del()));
+
+        disconnect(cutAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(cut()));
+        disconnect(copyAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(copy()));
+        disconnect(pasteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(paste()));
+        disconnect(deleteAction, SIGNAL(triggered()), inputSpreadsheet, SLOT(del()));
+
+    }
+}
+
+void MainWindow::createContextMenu()
+{
+    inputSpreadsheet->addAction(cutAction);
+    inputSpreadsheet->addAction(copyAction);
+    inputSpreadsheet->addAction(pasteAction);
+    inputSpreadsheet->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    weightedSpreadsheet->addAction(cutAction);
+    weightedSpreadsheet->addAction(copyAction);
+    weightedSpreadsheet->addAction(pasteAction);
+    weightedSpreadsheet->setContextMenuPolicy(Qt::ActionsContextMenu);
+}
 
 //TO DO: separate create actions function into create tool bar, create menu etc.
-
-
 
 void MainWindow::createStatusBar()
 
@@ -253,44 +311,76 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
 }
 
-void MainWindow::setCurrentFile(const QString &fileName)
-
-{
-    curFile = fileName;
-    textEdit->document()->setModified(false);
-    setWindowModified(false);
-
-    QString shownName = curFile;
-    if (curFile.isEmpty())
-        shownName = "untitled.txt";
-    setWindowFilePath(shownName);
-}
-
-QString MainWindow::strippedName(const QString &fullFileName)
-
-{
-    return QFileInfo(fullFileName).fileName();
-}
-
 void MainWindow::print()
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
     QPrinter printer(QPrinter::ScreenResolution);
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
-    view.setModel(spreadsheet->model());
+    view.setModel(inputSpreadsheet->model());
     connect(&dlg, &QPrintPreviewDialog::paintRequested, &view, &PrintView::print);
     dlg.exec();
 #endif
 }
 
-void MainWindow::copy()
+void MainWindow::createInputTable()
 {
 
 }
 
-void MainWindow::paste()
+//void MainWindow::saveInputToText()
+//{
+//    QString textData;
+//    int rows = inputSpreadsheet->rowCount();
+//    int columns = inputSpreadsheet->columnCount();
+
+//    for (int i = 0; i < rows; i++) {
+//        for (int j = 0; j < columns; j++) {
+//                textData += inputSpreadsheet->item(i,j)).toString();
+//                textData += "\t";      // for .csv file format
+//        }
+//        textData += "\n";             // (optional: for new line segmentation)
+//    }
+
+//    // [Save to file] (header file <QFile> needed)
+//    // .csv
+//    QFile csvFile("test.csv");
+//    if(csvFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+
+//        QTextStream out(&csvFile);
+//        out << textData;
+
+//        csvFile.close();
+//    }
+
+//    // .txt
+//    QFile txtFile("test.txt");
+//    if(txtFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+
+//        QTextStream out(&txtFile);
+//        out << textData;
+
+//        txtFile.close();
+//    }
+//}
+
+void MainWindow::saveInputToText()
 {
+    QFile data("inputsetup_test.txt");
+    if (data.open(QFile::WriteOnly | QIODevice::Append)) {
+     }
+    QTextStream output(&data);
+    int rows = inputSpreadsheet->rowCount();
+    int columns = inputSpreadsheet->columnCount();
 
+    output << 14;
+
+        for (int i = 0; i < rows; i++) {
+            output << inputHeaderV[i] << '\t';
+            for (int j = 0; j < columns; j++) {
+                    output << inputSpreadsheet->item(i,j) << '\t';    // for .csv file format
+            }
+            output << "\n";             // (optional: for new line segmentation)
+        }
+    data.close();
 }
-

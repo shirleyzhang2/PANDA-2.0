@@ -2,12 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "model.h"
-#include "editdesign.h"
-#include "runanalysis.h"
+#include "canoe.h"
+//#include "model.h"
+//#include "editdesign.h"
+//#include "runanalysis.h"
 
 QT_BEGIN_NAMESPACE
 class QPlainTextEdit;
+class QTabWidget;
 class QTableWidgetItem;
 class QTableWidget;
 class QAction;
@@ -33,42 +35,59 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void tutorial();
-    void parameters();
-    void design();
-    void analysis();
-    void rank();
-    void mesh();
-    void documentWasModified();
-
-private:
     void createActions();
     void createContextMenu();
+    void tabSelected();
     void createStatusBar();
     void readSettings();
     void writeSettings();
-    bool maybeSave();
-    bool saveFile(const QString &fileName);
-    void setCurrentFile(const QString &fileName);
-    void copy();
-    void paste();
+
+    void tutorial();
+    void parameters();
+    void analysis();
+    void final();
+    void mesh();
+
+    void createInputTable();
+    void saveInputToText();
+
+private:
 
     // should keep all actions here
-    //QAction *copyAct;
+    QAction *cutAction;
+    QAction *copyAction;
+    QAction *pasteAction;
+    QAction *deleteAction;
 
-    std::map <std::string, Model> allDesign;
+//    std::map <std::string, Model> allDesign;
     enum { MagicNumber = 0x7F51C883, RowCount = 999, ColumnCount = 16 };
 
     QString strippedName(const QString &fullFileName);
 
-    QPlainTextEdit *textEdit;
+//    QPlainTextEdit *textEdit;
     QTableWidget *table;
     QString curFile;
 
-    EditDesign *editdesign;
-    RunAnalysis *runanalysis;
+//    EditDesign *editdesign;
+    QTabWidget *central_widget;
+//    RunAnalysis *runanalysis;
 
-    Spreadsheet *spreadsheet;
+    Spreadsheet *inputSpreadsheet;
+    Spreadsheet *weightedSpreadsheet;
+
+    Canoe *c;
+
+
+    // spreadsheet dimensions
+    QStringList inputHeaderH = {"Min", "Max", "Value"};
+    int numInputHeaderH{ static_cast<int>(std::size(inputHeaderH)) };
+    QStringList inputHeaderV = {"length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density"};
+    int numInputHeaderV{ static_cast<int>(std::size(inputHeaderV)) };
+    QStringList weightedHeaderH = {"Target Value", "Standard Dev.", "Weight"};
+    int numWeightedHeaderH{ static_cast<int>(std::size(weightedHeaderH)) };
+    QStringList weightedHeaderV = {"Canoe Weight", "Cp", "Freeboard", "Drag", "Stability", "Leak angle", "Second moment", "Waterplane centroid", "Paddler center"};
+    int numWeightedHeaderV{ static_cast<int>(std::size(weightedHeaderV)) };
+
 };
 //! [0]
 

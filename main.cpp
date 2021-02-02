@@ -9,6 +9,8 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QScreen>
+#include <QDesktopWidget>
 
 #include "mainwindow.h"
 #include "editdesign.h"
@@ -28,7 +30,20 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("PANDA_POSSUM");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
-    MainWindow mainWin/*(4,16)*/;
+    MainWindow mainWin;
+    mainWin.resize(600,550);
+
+    // Move main window to center of screen-ish
+    auto screenGeometry = QGuiApplication::screens().first()->geometry();
+    mainWin.setGeometry(
+
+       QStyle::alignedRect(
+           Qt::LeftToRight,
+           Qt::AlignCenter,
+           mainWin.size(),
+           screenGeometry
+       )
+    );
     mainWin.show();
     return app.exec();
 }
