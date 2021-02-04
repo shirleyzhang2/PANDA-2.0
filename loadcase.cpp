@@ -358,31 +358,32 @@ double LoadCase::SplineLength(double P0y, double P0z, double P1y, double P1z,
 
 
 
-//int ReadC4Table(ifstream& c4) {
-//    int i, j, k;
-//    for (i = 0; i < 3; i++) {
-//        for (j = 0; j < 17; j++) {
-//            for (k = 0; k < 14; k++) {
-//                c4 >> C4TABLE[i][j][k];
-//            }
-//        }
-//    }
-//    return 0;
-//} old ReadC4Table
-
-
-// will probably need to link this to the event cpp
-int LoadCase::ReadC4Table(double c4[3][17][14]){
-    int i,j,k;
+int LoadCase::ReadC4Table(ifstream& c4) {
+    int i, j, k;
     for (i = 0; i < 3; i++) {
         for (j = 0; j < 17; j++) {
             for (k = 0; k < 14; k++) {
-                C4TABLE[i][j][k] = &c4[i][j][k];
+                c4 >> C4TABLE[i][j][k];
             }
         }
     }
     return 0;
 }
+//old ReadC4Table
+
+
+// will probably need to link this to the event cpp
+//int LoadCase::ReadC4Table(double c4[3][17][14]){
+//    int i,j,k;
+//    for (i = 0; i < 3; i++) {
+//        for (j = 0; j < 17; j++) {
+//            for (k = 0; k < 14; k++) {
+//                C4TABLE[i][j][k] = &c4[i][j][k];
+//            }
+//        }
+//    }
+//    return 0;
+//}
 
 // Look up c4 in the table
 double LoadCase::GetC4(double Cv, double Cp, double vtol) {
@@ -428,7 +429,7 @@ double LoadCase::GetC4(double Cv, double Cp, double vtol) {
     for (i = Cvind1; i <= Cvind2; i++) {
         for (j = Cpind1; j <= Cpind2; j++) {
             for (k = vtolind1; k <= vtolind2; k++) {
-                corners[i - Cvind1][j - Cpind1][k - vtolind1] = *C4TABLE[i][j][k];
+                corners[i - Cvind1][j - Cpind1][k - vtolind1] = C4TABLE[i][j][k];
             }
         }
     }
@@ -449,11 +450,11 @@ double LoadCase::GetC4(double Cv, double Cp, double vtol) {
     return c4;
 }
 
-double LoadCase::Score(double* values, double* targetmeans[], double* targetstds[], double* weights[], int n) {
+double LoadCase::Score(double* values, double* targetmeans, double* targetstds, double* weights, int n) {
     int i;
     double score = 0;
     for (i = 0; i < n; i++) {
-        score += *weights[i] * Gaussian(*targetmeans[i], *targetstds[i], values[i]);
+        score += weights[i] * Gaussian(targetmeans[i], targetstds[i], values[i]);
     }
     return score;
 }
@@ -462,28 +463,29 @@ double LoadCase::Gaussian(double mean, double std, double x) {
     return 1. * exp(-(x - mean) * (x - mean) / 2 / std / std);
 }
 
-/*
-int ReadWeightsTable(ifstream& targettable) {
+// added LoadCase::
+int LoadCase::ReadWeightsTable(ifstream& targettable) {
     int i, j;
     char buffer[128];
-    for (i = 0; i < 17; i++) {
+    for (i = 0; i < 9; i++) {
         targettable >> buffer; // this skips the initial input
         for (j = 0; j < 3; j++) {
             targettable >> targets[j][i];
         }
     }
     return 0;
-}*/ // old ReadWeightsTable
+} // old ReadWeightsTable
 
-int LoadCase::ReadWeightsTable(double Weights[3][17]) {
-    //Create Weight Targets, assuming that UI passes already an input of [3][17] matrix of only the data , will adjust accordingly
-    int i, j;
-    for (i = 0; i < 17; i++) {
-        for (j = 0; j < 3; j++) {
-            targets[j][i] = &Weights[j][i];
-        }
-    }
-    return 0;}
+// CHanged 17 to 9
+//int LoadCase::ReadWeightsTable(double Weights[3][9]) {
+//    //Create Weight Targets, assuming that UI passes already an input of [3][17] matrix of only the data , will adjust accordingly
+//    int i, j;
+//    for (i = 0; i < 9; i++) {
+//        for (j = 0; j < 3; j++) {
+//            targets[j][i] = &Weights[j][i];
+//        }
+//    }
+//    return 0;}
 
 //int CreateInputs(double Input[3][14])
 //{

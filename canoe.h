@@ -12,6 +12,8 @@ using namespace std;
 // Global variables
 // KAPER chart
 
+//double C4TABLE[3][17][14];		// [Cv][Cp][vtol]
+//double targets[3][17];
 
 class Canoe/* : public QObject*/
 {
@@ -47,7 +49,7 @@ public:
     double density;	// area density
 
     // derived quantities
-    LoadCase loadcase[1];	// light and heavy loading ~ reedited to only allow for 4 paddler case
+    LoadCase loadcase;	// light and heavy loading ~ reedited to only allow for 4 paddler case
     //LoadCase loadcase = LoadCase();
     std::ofstream output;	// output file
     double surfacearea;	// surface area
@@ -55,14 +57,8 @@ public:
     double CMx;				// centre of mass x
     double CMz;				// centre of mass z
     double actualbeam;
-    double outputs[17];
-
-    // new input variables, old version (14 not 13)
-    double * Input[3][14];
-    // dynamic input table
-
-
-
+    // modified from 17 to 9 (only 1 load case)
+    double outputs[9] {};
 
     int ControlPoints(int station, double& P0y, double& P0z, double& P1y, double& P1z, double& P2y, double& P2z,
         double& P3y, double& P3z);

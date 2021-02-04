@@ -111,7 +111,7 @@ void MainWindow::analysis()
       qDebug() << "Yes was clicked";
 
       //QApplication::quit();
-      createInputTable();
+      saveInputToText();
     } else {
       qDebug() << "Yes was *not* clicked";
     }
@@ -365,22 +365,56 @@ void MainWindow::createInputTable()
 //}
 
 void MainWindow::saveInputToText()
-{
-    QFile data("inputsetup_test.txt");
-    if (data.open(QFile::WriteOnly | QIODevice::Append)) {
-     }
-    QTextStream output(&data);
-    int rows = inputSpreadsheet->rowCount();
-    int columns = inputSpreadsheet->columnCount();
+{ 
+    // Save input table to txt in directory containing .exe
+    QString inputPath = QCoreApplication::applicationDirPath().append("/TEST_INPUT.txt");
+    QFile inputData(inputPath);
 
-    output << 14;
+    if (inputData.open(QFile::WriteOnly))
+    {
+        QTextStream input(&inputData);
+        //output << "success";
+        qDebug() << "file created";
+
+        int rows = inputSpreadsheet->rowCount();
+        int columns = inputSpreadsheet->columnCount();
+
+        input << rows << "\n";
 
         for (int i = 0; i < rows; i++) {
-            output << inputHeaderV[i] << '\t';
+            input << inputHeaderV[i] << '\t';
             for (int j = 0; j < columns; j++) {
-                    output << inputSpreadsheet->item(i,j) << '\t';    // for .csv file format
+                    input << inputSpreadsheet->item(i,j)->text() << '\t';    // for .csv file format
             }
-            output << "\n";             // (optional: for new line segmentation)
+            input << "\n";             // (optional: for new line segmentation)
         }
-    data.close();
+
+        inputData.close();
+     }
+
+    // Save weighted table
+    QString weightedPath = QCoreApplication::applicationDirPath().append("/TEST_WEIGHTED.txt");
+    QFile weightedData(weightedPath);
+
+    if (weightedData.open(QFile::WriteOnly))
+    {
+        QTextStream weighted(&weightedData);
+        //output << "success";
+        qDebug() << "file created";
+
+        int rows = weightedSpreadsheet->rowCount();
+        int columns = weightedSpreadsheet->columnCount();
+
+        // << rows << "\n";
+
+        for (int i = 0; i < rows; i++) {
+            weighted << weightedHeaderV[i] << '\t';
+            for (int j = 0; j < columns; j++) {
+                    weighted << weightedSpreadsheet->item(i,j)->text() << '\t';    // for .csv file format
+            }
+            weighted << "\n";             // (optional: for new line segmentation)
+        }
+
+        weightedData.close();
+     }
 }

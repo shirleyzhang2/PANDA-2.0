@@ -11,6 +11,9 @@
 
 using namespace std;
 
+inline double C4TABLE[3][17][14];		// [Cv][Cp][vtol]
+inline double targets[3][17];
+
 class LoadCase/* : public QObject*/
 {
    // Q_OBJECT
@@ -30,8 +33,9 @@ public:
     double waterplanecentroid;
     double paddlercentre;		// where the paddlers should be centred
 
-    double * C4TABLE[3][17][14];
-    double * targets[3][17];
+    //double * C4TABLE[3][17][14];
+    //double * targets[3][17];
+
 
     //Canoe* canoe;		// canoe it belongs to
 
@@ -62,13 +66,13 @@ public:
 
     double GetC4(double Cv, double Cp, double vtol);
 
-    //int ReadC4Table(ifstream& c4);
-    int ReadC4Table(double c4[3][17][14]);
+    int ReadC4Table(ifstream& c4);
+    //int ReadC4Table(double c4[3][17][14]);
 
-    //int ReadWeightsTable(ifstream& targettable);
-    int ReadWeightsTable(double Weights[3][17]);
+    int ReadWeightsTable(ifstream& targettable);
+    //int ReadWeightsTable(double Weights[3][9]);
 
-    double Score(double* values, double* targetmeans[], double* targetstds[], double* weights[], int n);
+    double Score(double* values, double* targetmeans, double* targetstds, double* weights, int n);
 
     double Gaussian(double mean, double std, double x);
 

@@ -108,7 +108,7 @@ int Canoe::Analyze(double d, double theta, double trim, double& volume, double& 
     for (i = 0; i < numstations; i++) {
         ControlPoints(i, P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z);
         // freeboard at distance x is given by d - trim/length*x
-        if (loadcase[0].SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, (trim == 0 ? d : d - trim / length * x), theta, areas[i], centroidy[i], centroidz[i]) == -1) {
+        if (loadcase.SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, (trim == 0 ? d : d - trim / length * x), theta, areas[i], centroidy[i], centroidz[i]) == -1) {
             //cout << "LEAK\n";			// let it pass for now
             flag = 1;
             //return 1;
@@ -151,10 +151,10 @@ int Canoe::Analyze(double d, double theta, double trim, double& volume, double& 
 double Canoe::Waterline(double x) {
     double m1 = width / (2. * lfirst);
     double m2 = width / (2. * (length - lpaddler - lfirst));
-    double rbow = width / 2. - m1 * loadcase[0].Ramp(width / (2. * m1), smooth1) - m2 * loadcase[0].Ramp(-length + width / (2. * m2), smooth2);
-    double rstern = width / 2. - m1 * loadcase[0].Ramp(width / (2. * m1) - length, smooth1) - m2 * loadcase[0].Ramp(width / (2. * m2), smooth2);
+    double rbow = width / 2. - m1 * loadcase.Ramp(width / (2. * m1), smooth1) - m2 * loadcase.Ramp(-length + width / (2. * m2), smooth2);
+    double rstern = width / 2. - m1 * loadcase.Ramp(width / (2. * m1) - length, smooth1) - m2 * loadcase.Ramp(width / (2. * m2), smooth2);
 
-    return (width / 2. - m1 * loadcase[0].Ramp(width / (2. * m1) - x, smooth1) - m2 * loadcase[0].Ramp(x - length + width / (2. * m2), smooth2) - (rstern - rbow) * x / length - rbow);
+    return (width / 2. - m1 * loadcase.Ramp(width / (2. * m1) - x, smooth1) - m2 * loadcase.Ramp(x - length + width / (2. * m2), smooth2) - (rstern - rbow) * x / length - rbow);
 }
 
 double Canoe::Keelline(double x) {
@@ -246,9 +246,9 @@ int Canoe::InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, 
 //    loadcase[0].paddlercm = .40;		// 40 cm (rough estimate)
 
     // 2+2 load case - speed is important
-    loadcase[0].numpaddlers = 4;
-    loadcase[0].paddlerweight = 72.5;			// about 135 pounds for women
-    loadcase[0].paddlercm = .35;			// about 30 cm for women
+    loadcase.numpaddlers = 4;
+    loadcase.paddlerweight = 72.5;			// about 135 pounds for women
+    loadcase.paddlercm = .35;			// about 30 cm for women
 
     return 0;
 }
@@ -298,7 +298,7 @@ double Canoe::GetCp(double d, double LWL) {
     for (i = 0; i < numstations; i++) {
         ControlPoints(i, P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z);
         // freeboard at distance x is given by d - trim/length*x
-        if (loadcase[0].SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d, 0, areas[i], dummy1, dummy2) == -1) {
+        if (loadcase.SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d, 0, areas[i], dummy1, dummy2) == -1) {
             cout << "LEAK\n";
             delete[] areas;
             return 1;
@@ -329,10 +329,10 @@ int Canoe::CrossCurve(double weight, double cmheight, double& tangent, double& t
     double theta2 = theta + tinc;
     double d1 = FindWLine(weight, theta1, 0);
     Analyze(d1, theta1, 0, v, cx, cy, cz);
-    double moment1 = loadcase[0].Moment(cy, cz, 0, cmheight, weight, theta);
+    double moment1 = loadcase.Moment(cy, cz, 0, cmheight, weight, theta);
     double d2 = FindWLine(weight, theta2, 0);
     Analyze(d2, theta2, 0, v, cx, cy, cz);
-    double moment2 = loadcase[0].Moment(cy, cz, 0, cmheight, weight, theta);
+    double moment2 = loadcase.Moment(cy, cz, 0, cmheight, weight, theta);
     tangent = (moment2 - moment1) / (theta2 - theta1);
 
     // find critical tipping angle
@@ -399,7 +399,7 @@ double Canoe::SurfaceArea(double d, double& cx, double& cz) {
     double cmz;
     for (i = 0; i < numstations; i++) {
         ControlPoints(i, P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z);
-        lengths[i] = loadcase[0].SplineLength(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d, cmz);
+        lengths[i] = loadcase.SplineLength(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d, cmz);
         //x += increment;
         cenzs[i] = cmz;			//
     }
@@ -428,7 +428,7 @@ double Canoe::Kaper(double BWL, double EWL, double WS, double Cp, double Cv, dou
     double c1 = 0.002 * sqrt(BWL / EWL) * pow((4 * vtol), 4);
     double c2 = 0.005 * (sin(le * 360 / 2. / PI)) * (4 * vtol) * (4 * vtol);
     double c3 = (vtol < 1.5 ? 1 : 0.7) * 0.8 * cos(3.65 * vtol + 0.07) + (vtol < 1.5 ? 1 : 0.96) * 1.2;
-    double c4 = loadcase[0].GetC4(Cv, Cp, vtol);
+    double c4 = loadcase.GetC4(Cv, Cp, vtol);
     double c5 = pow((0.5 / LCB), 0.35);
 
     double Rr = (4 * c5 * disp * pow(vtol, 4) + c1 + c2) * (c3 * c4 * c5);
@@ -459,7 +459,7 @@ double Canoe::GetEWL(double d, double theta, double trim) {
     for (i = 0; i < numstations; i++) {
         ControlPoints(i, P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z);
         // freeboard at distance x is given by d - trim/length*x
-        if (loadcase[0].SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d - trim / length * x, theta, areas[i], dummy1, dummy2) == -1) {
+        if (loadcase.SectionResultant(P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z, d - trim / length * x, theta, areas[i], dummy1, dummy2) == -1) {
             cout << "LEAK\n";
             delete[] areas;
             return 1;
@@ -549,14 +549,14 @@ double Canoe::GetBWL(double d) {
         double B3 = 3 * P1z - 6 * P2z + 3 * P3z;
         double C3 = 3 * P2z - 3 * P3z;
         double D3 = P3z;
-        double tf = loadcase[0].SolveCubic(A3, B3, C3, D3 + d - P0z);
+        double tf = loadcase.SolveCubic(A3, B3, C3, D3 + d - P0z);
 
         double A1 = P0y - 3 * P1y + 3 * P2y - P3y;
         double B1 = 3 * P1y - 6 * P2y + 3 * P3y;
         double C1 = 3 * P2y - 3 * P3y;
         double D1 = P3y;
 
-        width = loadcase[0].Spline(A1, B1, C1, D1, tf);
+        width = loadcase.Spline(A1, B1, C1, D1, tf);
         if (width > BWL) {
             BWL = width;
         }
@@ -600,12 +600,12 @@ double Canoe::Getle(double d) {
     double B3 = 3 * P1z - 6 * P2z + 3 * P3z;
     double C3 = 3 * P2z - 3 * P3z;
     double D3 = P3z;
-    double tf = loadcase[0].SolveCubic(A3, B3, C3, D3 + d - P0z);
+    double tf = loadcase.SolveCubic(A3, B3, C3, D3 + d - P0z);
     double A1 = P0y - 3 * P1y + 3 * P2y - P3y;
     double B1 = 3 * P1y - 6 * P2y + 3 * P3y;
     double C1 = 3 * P2y - 3 * P3y;
     double D1 = P3y;
-    double w1 = loadcase[0].Spline(A1, B1, C1, D1, tf);
+    double w1 = loadcase.Spline(A1, B1, C1, D1, tf);
 
     double dx = length / 1000.;													// a sufficiently small dx
     ControlPoints(xentrance + dx, P0y, P0z, P1y, P1z, P2y, P2z, P3y, P3z);
@@ -613,12 +613,12 @@ double Canoe::Getle(double d) {
     B3 = 3 * P1z - 6 * P2z + 3 * P3z;
     C3 = 3 * P2z - 3 * P3z;
     D3 = P3z;
-    tf = loadcase[0].SolveCubic(A3, B3, C3, D3 + d - P0z);
+    tf = loadcase.SolveCubic(A3, B3, C3, D3 + d - P0z);
     A1 = P0y - 3 * P1y + 3 * P2y - P3y;
     B1 = 3 * P1y - 6 * P2y + 3 * P3y;
     C1 = 3 * P2y - 3 * P3y;
     D1 = P3y;
-    double w2 = loadcase[0].Spline(A1, B1, C1, D1, tf);
+    double w2 = loadcase.Spline(A1, B1, C1, D1, tf);
 
     double angle = atan2(w2 - w1, dx);
 
@@ -686,11 +686,11 @@ int Canoe::AnalyzeAll() {
     int i;
     bool error = false;
     for (i = 0; i < 1; i++) {
-        loadcase[i].totweight = (loadcase[i].numpaddlers * loadcase[i].paddlerweight + weight) / 1000.;
-        loadcase[i].totcm = (loadcase[i].numpaddlers * loadcase[i].paddlerweight * (loadcase[i].paddlercm - depth) + weight * CMz) / loadcase[i].totweight;
+        loadcase.totweight = (loadcase.numpaddlers * loadcase.paddlerweight + weight) / 1000.;
+        loadcase.totcm = (loadcase.numpaddlers * loadcase.paddlerweight * (loadcase.paddlercm - depth) + weight * CMz) / loadcase.totweight;
 
-        double d = FindWLine(loadcase[i].totweight * 1.0, 0, 0);		// density of water = 1.0
-        loadcase[i].freeboard = d;
+        double d = FindWLine(loadcase.totweight * 1.0, 0, 0);		// density of water = 1.0
+        loadcase.freeboard = d;
         if (d < 0) {
             error = true;
             break;
@@ -699,41 +699,41 @@ int Canoe::AnalyzeAll() {
         double LCB, ceny, cenz, volume;
         Analyze(d, 0, 0, volume, LCB, ceny, cenz);
         // report paddler centre as percentage of paddler box length away from the "ideal" paddler centre
-        double paddlercentreabs = (LCB * volume - CMx * weight / 1000.) / (loadcase[i].numpaddlers * loadcase[i].paddlerweight / 1000.);
-        loadcase[i].paddlercentre = (paddlercentreabs - (lfirst + 0.5 * lpaddler)) / lpaddler;				// I THINK THIS EQUATION IS FLAWED
+        double paddlercentreabs = (LCB * volume - CMx * weight / 1000.) / (loadcase.numpaddlers * loadcase.paddlerweight / 1000.);
+        loadcase.paddlercentre = (paddlercentreabs - (lfirst + 0.5 * lpaddler)) / lpaddler;				// I THINK THIS EQUATION IS FLAWED
 
         double LWL = GetLWL(d);
-        loadcase[i].Cp = GetCp(d, LWL);
+        loadcase.Cp = GetCp(d, LWL);
         double friction = GetFriction(d, 2.57222222);	// 5 knots = about 10 km/h
         if (friction < 0) {
             error = true;
             break;
         }
-        loadcase[i].friction5 = friction;
+        loadcase.friction5 = friction;
 
         double tangent, tipping;
-        if (CrossCurve(loadcase[i].totweight * 1.0, loadcase[i].totcm, tangent, tipping) == 1) {
+        if (CrossCurve(loadcase.totweight * 1.0, loadcase.totcm, tangent, tipping) == 1) {
             error = true;
             break;
         }
-        loadcase[i].initstability = tangent;
-        loadcase[i].tippingangle = tipping;
+        loadcase.initstability = tangent;
+        loadcase.tippingangle = tipping;
 
         double wpcen, wparea, wpmom2;
         Waterplane(d, wpcen, wparea, wpmom2);
-        loadcase[i].waterplane2 = wpmom2;
-        loadcase[i].waterplanecentroid = wpcen / length;		// give it as a percentage of length
+        loadcase.waterplane2 = wpmom2;
+        loadcase.waterplanecentroid = wpcen / length;		// give it as a percentage of length
     }
 
     outputs[0] = weight;
-    outputs[1] = loadcase[0].Cp;
-    outputs[2] = loadcase[0].freeboard;
-    outputs[3] = loadcase[0].friction5;
-    outputs[4] = loadcase[0].initstability;
-    outputs[5] = loadcase[0].tippingangle;
-    outputs[6] = loadcase[0].waterplane2;
-    outputs[7] = loadcase[0].waterplanecentroid;
-    outputs[8] = loadcase[0].paddlercentre;
+    outputs[1] = loadcase.Cp;
+    outputs[2] = loadcase.freeboard;
+    outputs[3] = loadcase.friction5;
+    outputs[4] = loadcase.initstability;
+    outputs[5] = loadcase.tippingangle;
+    outputs[6] = loadcase.waterplane2;
+    outputs[7] = loadcase.waterplanecentroid;
+    outputs[8] = loadcase.paddlercentre;
 //    outputs[9] = loadcase[1].Cp;
 //    outputs[10] = loadcase[1].freeboard;
 //    outputs[11] = loadcase[1].friction5;
@@ -775,8 +775,8 @@ int Canoe::OutputMesh(ofstream& meshout) {
         D3 = P3z;
         for (j = 0;j <= n;j++) {
             t = j / (double)n;
-            y = loadcase[0].Spline(A1, B1, C1, D1, t);
-            z = loadcase[0].Spline(A3, B3, C3, D3, t);
+            y = loadcase.Spline(A1, B1, C1, D1, t);
+            z = loadcase.Spline(A3, B3, C3, D3, t);
             meshout << length - x << "\t" << y << "\t" << z << "\n"; // x values need to be reversed for freeship
         }
         meshout << endl;
@@ -875,83 +875,29 @@ int Canoe::UIBulk() {
     cout << "\n\n";
     ifstream input;
     ofstream writeinput;
-    double n1, n2, n3;
     ofstream inputfile;
     char buffer[128];
 
-
-    switch (numeric) {
-    case 1:
-        cout << "Input filename: ";
-        cin >> buffer;
-        cout << "\n";
-        input.open(buffer);
-        if (input.fail()) {
-            cout << "File not found\n\n\n";
-            return 1;
-        }
-        break;
-    case 2:
-        cout << "Input input setup filename: ";
-        cin >> buffer;
-        cout << "\n\n";
-        writeinput.open(buffer);
-
-        cout << "Input all fields in the format [Minimum Value] [Maximum Value] [Number of Values]\n";
-
-        writeinput << 14 << endl;
-        cout << "Length: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "Length\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "Lp: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "Lp\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "Ld: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "Ld\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "Lf: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "Lf\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "W: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "W\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "t1: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "t1\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "t2: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "t2\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "d: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "d\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        writeinput << "h\t" << 0 << '\t' << 0 << '\t' << 1 << endl;
-        cout << "b: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "b\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "s: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "s\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "f: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "f\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "n: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "n\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        cout << "Density: ";	cin >> n1 >> n2 >> n3;
-        writeinput << "Density\t" << n1 << '\t' << n2 << '\t' << n3 << endl;
-        writeinput.close();
-        input.open(buffer);
-        break;
-    default:
+    input.open("TEST_inputsetup.txt");
+    if (input.fail()) {
+        cout << "File not found\n\n\n";
         return 1;
     }
 
     // Do the bulk analysis
+    inputfile.open("TEST_inputtable.txt");
 
-    cout << "\nInput input table filename: ";
-    cin >> buffer;
-    cout << "\n";
-    inputfile.open(buffer);
-
-    loadcase[0].CreateInputs(input, inputfile);
+    loadcase.CreateInputs(input, inputfile);
     inputfile.close();
 
     ifstream inputtable;
-    inputtable.open(buffer);
+    inputtable.open("TEST_inputtable.txt");
 
     cout << "Input output table filename: ";
     cin >> buffer;
     cout << "\n";
     ofstream resultsout;
-    resultsout.open(buffer);
+    resultsout.open("TEST_output.txt");
 
     int numcanoes;
     inputtable >> numcanoes;			// first line of file
@@ -978,7 +924,8 @@ int Canoe::UIBulk() {
             for (int j = 0; j < 17; j++) {
                 resultsout << '\t' << c.outputs[j];
             }
-            resultsout << '\t' << loadcase[0].Score(c.outputs, loadcase[0].targets[0], loadcase[0].targets[1], loadcase[0].targets[2], 17) << endl;
+            //changed 17 to 9
+            resultsout << '\t' << loadcase.Score(c.outputs, targets[0], targets[1], targets[2], 9) << endl;
             cout << "Canoe " << canoenum << " successfully analyzed.\n";
             //		cout << canoenum << '\t' << Score(c.outputs,targets[0],targets[1],targets[2],17) << endl;
         }
