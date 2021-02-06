@@ -12,7 +12,7 @@
 using namespace std;
 
 inline double C4TABLE[3][17][14];		// [Cv][Cp][vtol]
-inline double targets[3][17];
+inline double targets[3][9];
 
 class LoadCase/* : public QObject*/
 {

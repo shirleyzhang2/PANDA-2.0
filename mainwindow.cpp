@@ -4,6 +4,7 @@
 //#include "runanalysis.h"
 #include "printview.h"
 #include "spreadsheet.h"
+//#include "canoe.h"
 
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport>
@@ -112,6 +113,10 @@ void MainWindow::analysis()
 
       //QApplication::quit();
       saveInputToText();
+      c = new Canoe;
+      c->UIBulk();
+
+
     } else {
       qDebug() << "Yes was *not* clicked";
     }
@@ -367,7 +372,8 @@ void MainWindow::createInputTable()
 void MainWindow::saveInputToText()
 { 
     // Save input table to txt in directory containing .exe
-    QString inputPath = QCoreApplication::applicationDirPath().append("/TEST_INPUT.txt");
+    //QString inputPath = QCoreApplication::applicationDirPath().append("/TEST_INPUT.txt");
+    QString inputPath = "TEST_inputsetup.txt";
     QFile inputData(inputPath);
 
     if (inputData.open(QFile::WriteOnly))
@@ -393,7 +399,8 @@ void MainWindow::saveInputToText()
      }
 
     // Save weighted table
-    QString weightedPath = QCoreApplication::applicationDirPath().append("/TEST_WEIGHTED.txt");
+    //QString weightedPath = QCoreApplication::applicationDirPath().append("/TEST_WEIGHTED.txt");
+    QString weightedPath = "TEST_weighttable.txt";
     QFile weightedData(weightedPath);
 
     if (weightedData.open(QFile::WriteOnly))

@@ -15,6 +15,10 @@ using namespace std;
 //double C4TABLE[3][17][14];		// [Cv][Cp][vtol]
 //double targets[3][17];
 
+inline int counter;
+inline int bowpower;
+inline int sternpower;
+
 class Canoe/* : public QObject*/
 {
     //Q_OBJECT
@@ -41,7 +45,7 @@ public:
     double smooth1; // t1 = Waterline smoothing parameter (bow side)
     double smooth2; // t2 = Waterline smoothing parameter (stern side)
     double depth; // d = Depth of canoe below the flange
-    double hflange; // h = Height of the flange
+    //double hflange; // h = Height of the flange
     double brocker; // b = Bow rocker
     double srocker; // s = Stern rocker
     double flare; // f(x) = Flare angle of the flange (in general a function of distance along the canoe)
@@ -70,12 +74,12 @@ public:
 
     double Waterline(double x);
 
-    int InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, double h, double b,
+    int InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, /*double h, */double b,
         double s, double f, double n, double density);		// density in kg/m^2
 
     int Destruct();
 
-    Canoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, double h, double b,
+    Canoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, /*double h, */double b,
         double s, double f, double n);
 
     //Canoe();

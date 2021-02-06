@@ -526,7 +526,8 @@ int LoadCase::CreateInputs(ifstream& inputsetup, ofstream& writeinput) {
     }
 
     writeinput << product << endl;
-    writeinput << "Canoe\tLength\tLp\tLd\tLf\tW\tt1\tt2\td\th\tb\ts\tf\tn\tdensity\n";
+    // delete h
+    writeinput << "Canoe\tLength\tLp\tLd\tLf\tW\tt1\tt2\td\tb\ts\tf\tn\tdensity\n";
 
     i = 0;
     int count = 1;

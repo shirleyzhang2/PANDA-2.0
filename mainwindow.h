@@ -85,7 +85,7 @@ private:
     int numInputHeaderV{ static_cast<int>(std::size(inputHeaderV)) };
     QStringList weightedHeaderH = {"Target Value", "Standard Dev.", "Weight"};
     int numWeightedHeaderH{ static_cast<int>(std::size(weightedHeaderH)) };
-    QStringList weightedHeaderV = {"Canoe Weight", "Cp", "Freeboard", "Drag", "Stability", "Leak angle", "Second moment", "Waterplane centroid", "Paddler center"};
+    QStringList weightedHeaderV = {"Weight", "Cp", "Freeboard", "Drag", "Stability", "LeakAngle", "SecondMoment", "WaterplaneCentroid", "PaddlerCentre"};
     int numWeightedHeaderV{ static_cast<int>(std::size(weightedHeaderV)) };
 
 };

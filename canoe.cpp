@@ -75,7 +75,7 @@ int Canoe::Destruct() {
     return 0;
 }
 
-Canoe::Canoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, double h, double b,
+Canoe::Canoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, /*double h, */double b,
     double s, double f, double n) {
     length = L;
     lpaddler = Lp;
@@ -85,7 +85,7 @@ Canoe::Canoe(double L, double Lp, double Ld, double Lf, double W, double t1, dou
     smooth1 = t1;
     smooth2 = t2;
     depth = d;
-    hflange = h;
+    //hflange = h;
     brocker = b;
     srocker = s;
     flare = f;
@@ -204,7 +204,7 @@ double Canoe::FindWLine(double vtarget, double theta, double trim) {
 
 }
 
-int Canoe::InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, double h, double b,
+int Canoe::InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, double t1, double t2, double d, /*double h, */double b,
     double s, double f, double n, double density) {
     numstations = 101;
     increment = L / (numstations - 1);
@@ -227,7 +227,7 @@ int Canoe::InitializeCanoe(double L, double Lp, double Ld, double Lf, double W, 
     smooth1 = t1;
     smooth2 = t2;
     depth = d;
-    hflange = h;
+    //hflange = h;
     brocker = b;
     srocker = s;
     flare = f;
@@ -867,16 +867,22 @@ double Canoe::GetFriction(double d, double v) {
 //}
 
 int Canoe::UIBulk() {
-    cout << "(1) Analyze from an existing input setup file\n(2) Create a new input setup file and analyze from it\n(3) Back to main menu\n\n";
 
-    int numeric;
-    cout << "> ";
-    cin >> numeric;
-    cout << "\n\n";
+
+    bowpower = 4;
+    sternpower = 4;
+    counter = 0;
+    ifstream c4table;
+    c4table.open("TEST_c4table.txt");
+    ifstream weighttable;
+    weighttable.open("TEST_weighttable.txt");
+    loadcase.ReadC4Table(c4table);
+    loadcase.ReadWeightsTable(weighttable);
+
     ifstream input;
     ofstream writeinput;
     ofstream inputfile;
-    char buffer[128];
+    //char buffer[128];
 
     input.open("TEST_inputsetup.txt");
     if (input.fail()) {
@@ -893,26 +899,23 @@ int Canoe::UIBulk() {
     ifstream inputtable;
     inputtable.open("TEST_inputtable.txt");
 
-    cout << "Input output table filename: ";
-    cin >> buffer;
-    cout << "\n";
     ofstream resultsout;
     resultsout.open("TEST_output.txt");
 
     int numcanoes;
     inputtable >> numcanoes;			// first line of file
     int i;
-    for (i = 0; i < 15; i++) {
-        inputtable >> buffer;
-    }
+    //for (i = 0; i < 15; i++) {
+    //    inputtable >> buffer;
+    //}
 
     Canoe c;
     int flag;
     for (i = 0; i < numcanoes; i++) {
         flag = 0;
-        double canoenum, L, Lp, Ld, Lf, W, t1, t2, d, h, b, s, f, n, dens;
-        inputtable >> canoenum >> L >> Lp >> Ld >> Lf >> W >> t1 >> t2 >> d >> h >> b >> s >> f >> n >> dens;
-        c.InitializeCanoe(L, Lp, Ld, Lf, W, t1, t2, d, h, b, s, f, n, dens);
+        double canoenum, L, Lp, Ld, Lf, W, t1, t2, d, /*h, */b, s, f, n, dens;
+        inputtable >> canoenum >> L >> Lp >> Ld >> Lf >> W >> t1 >> t2 >> d >> /*h >> */b >> s >> f >> n >> dens;
+        c.InitializeCanoe(L, Lp, Ld, Lf, W, t1, t2, d,/* h,*/ b, s, f, n, dens);
         flag = c.AnalyzeAll();
         resultsout << canoenum;
 
@@ -921,7 +924,8 @@ int Canoe::UIBulk() {
             cout << "Canoe " << canoenum << " analysis failed.\n";
         }
         else {
-            for (int j = 0; j < 17; j++) {
+            //17 -> 9
+            for (int j = 0; j < 9; j++) {
                 resultsout << '\t' << c.outputs[j];
             }
             //changed 17 to 9
