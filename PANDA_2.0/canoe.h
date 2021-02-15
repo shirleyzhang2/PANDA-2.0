@@ -23,8 +23,8 @@ class Canoe/* : public QObject*/
 {
     //Q_OBJECT
 public:
-    int bowpower;
-    int sternpower;
+    //int bowpower;
+    //int sternpower;
     explicit Canoe(/*QObject *parent = nullptr*/);
     int numstations;
     double increment;

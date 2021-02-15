@@ -1,6 +1,7 @@
 #include "canoe.h"
+#include <QDebug>
 
-using namespace  std;
+using namespace std;
 
 
 Canoe::Canoe() /*(QObject *parent) : QObject(parent)*/
@@ -882,7 +883,7 @@ int Canoe::UIBulk() {
     ifstream input;
     ofstream writeinput;
     ofstream inputfile;
-    //char buffer[128];
+    char buffer[128];
 
     input.open("TEST_inputsetup.txt");
     if (input.fail()) {
@@ -905,9 +906,10 @@ int Canoe::UIBulk() {
     int numcanoes;
     inputtable >> numcanoes;			// first line of file
     int i;
-    //for (i = 0; i < 15; i++) {
-    //    inputtable >> buffer;
-    //}
+    // 15->14, skip headers
+    for (i = 0; i < 14; i++) {
+        inputtable >> buffer;
+    }
 
     Canoe c;
     int flag;
@@ -915,6 +917,7 @@ int Canoe::UIBulk() {
         flag = 0;
         double canoenum, L, Lp, Ld, Lf, W, t1, t2, d, /*h, */b, s, f, n, dens;
         inputtable >> canoenum >> L >> Lp >> Ld >> Lf >> W >> t1 >> t2 >> d >> /*h >> */b >> s >> f >> n >> dens;
+        qDebug() << L << Lp << Ld << Lf << W << t1 << t2 << d << /*h >> */b << s << f << n << dens;
         c.InitializeCanoe(L, Lp, Ld, Lf, W, t1, t2, d,/* h,*/ b, s, f, n, dens);
         flag = c.AnalyzeAll();
         resultsout << canoenum;
