@@ -17,7 +17,7 @@ SOURCES += \
     mainwindow.cpp \
     model.cpp \
     printview.cpp \
-    runanalysis.cpp \
+    showscore.cpp \
     spreadsheet.cpp \
     warningmessage.cpp
 
@@ -30,13 +30,13 @@ HEADERS += \
     mainwindow.h \
     model.h \
     printview.h \
-    runanalysis.h \
+    showscore.h \
     spreadsheet.h \
     warningmessage.h
 
 FORMS += \
     editdesign.ui \
-    runanalysis.ui
+    showscore.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

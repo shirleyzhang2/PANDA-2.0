@@ -14,7 +14,7 @@
 
 #include "mainwindow.h"
 #include "editdesign.h"
-#include "runanalysis.h"
+#include "showscore.h"
 
 int main(int argc, char *argv[])
 {

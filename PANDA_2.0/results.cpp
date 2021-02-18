@@ -1,12 +1,9 @@
-#include "runanalysis.h"
-#include "editdesign.h"
+#include "showscore.h"
 #include "model.h"
 #include "spreadsheet.h"
 #include <QWidget>
 #include <QtWidgets>
 #include <iostream>
-
-//std::map <std::string, Model> RunAnalysis::allD;
 
 RunAnalysis::RunAnalysis(QWidget *parent)
     : QMessageBox(parent)

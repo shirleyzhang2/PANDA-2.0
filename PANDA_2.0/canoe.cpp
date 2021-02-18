@@ -3,7 +3,6 @@
 
 using namespace std;
 
-
 Canoe::Canoe() /*(QObject *parent) : QObject(parent)*/
 {
 
@@ -931,10 +930,9 @@ int Canoe::UIBulk() {
             for (int j = 0; j < 9; j++) {
                 resultsout << '\t' << c.outputs[j];
             }
-            //changed 17 to 9
-            resultsout << '\t' << loadcase.Score(c.outputs, targets[0], targets[1], targets[2], 9) << endl;
+            //changed 17 to 9 and endl to \n
+            resultsout << '\t' << loadcase.Score(c.outputs, targets[0], targets[1], targets[2], 9) << '\n';
             cout << "Canoe " << canoenum << " successfully analyzed.\n";
-            //		cout << canoenum << '\t' << Score(c.outputs,targets[0],targets[1],targets[2],17) << endl;
         }
 
         c.Destruct();

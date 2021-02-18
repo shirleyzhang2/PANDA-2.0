@@ -5,7 +5,7 @@
 #include "canoe.h"
 //#include "model.h"
 //#include "editdesign.h"
-//#include "runanalysis.h"
+#include "showscore.h"
 
 QT_BEGIN_NAMESPACE
 class QPlainTextEdit;
@@ -70,13 +70,12 @@ private:
 
 //    EditDesign *editdesign;
     QTabWidget *central_widget;
-//    RunAnalysis *runanalysis;
+    ShowScore *showscore;
 
     Spreadsheet *inputSpreadsheet;
     Spreadsheet *weightedSpreadsheet;
 
     Canoe *c;
-
 
     // spreadsheet dimensions
     QStringList inputHeaderH = {"Min", "Max", "Value"};
@@ -87,6 +86,7 @@ private:
     int numWeightedHeaderH{ static_cast<int>(std::size(weightedHeaderH)) };
     QStringList weightedHeaderV = {"Weight", "Cp", "Freeboard", "Drag", "Stability", "LeakAngle", "SecondMoment", "WaterplaneCentroid", "PaddlerCentre"};
     int numWeightedHeaderV{ static_cast<int>(std::size(weightedHeaderV)) };
+    //QStringList resultsHeaderH = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density"};
 
 };
 //! [0]

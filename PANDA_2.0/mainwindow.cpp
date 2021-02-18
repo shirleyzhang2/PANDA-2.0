@@ -32,9 +32,11 @@ MainWindow::MainWindow(/*int rows, int cols, */QWidget *parent)
     weightedSpreadsheet->setVerticalHeaderLabels( weightedHeaderV );
     //weightedSpreadsheet->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
 
+    showscore = new ShowScore;
+
     setCentralWidget(central_widget);
 
-    //QStringList horizHeader = {"Design", "Score", "Length", "Lp", "Ld", "Lf", "w", "t1", "t2", "d", "b", "s", "f", "n", "density", "mesh"};
+    //
 
     createActions();
     createContextMenu();
@@ -110,17 +112,12 @@ void MainWindow::analysis()
                                   QMessageBox::Yes|QMessageBox::No);
     if (analysisDialog == QMessageBox::Yes) {
       qDebug() << "Yes was clicked";
-
-      //QApplication::quit();
       saveInputToText();
       c = new Canoe;
       c->UIBulk();
-
-
     } else {
       qDebug() << "Yes was *not* clicked";
     }
-    //RunAnalysis runanalysis(this);
 }
 
 void MainWindow::mesh()
@@ -138,7 +135,8 @@ void MainWindow::mesh()
 
 void MainWindow::final()
 {
-
+    //showscore = new ShowScore;
+    showscore->show();
 }
 
 void MainWindow::createActions()
@@ -219,7 +217,7 @@ void MainWindow::createActions()
 
     const QIcon finalIcon = QIcon(":/images/results.png");
     QAction *finalAct = new QAction(finalIcon, tr("&Show Results"), this);
-    finalAct->setStatusTip(tr("Chose final design with best score"));
+    finalAct->setStatusTip(tr("Show analysis results and scores"));
     connect(finalAct, &QAction::triggered, this, &MainWindow::final);
     designMenu->addAction(finalAct);
     designToolBar->addAction(finalAct);
@@ -332,42 +330,6 @@ void MainWindow::createInputTable()
 {
 
 }
-
-//void MainWindow::saveInputToText()
-//{
-//    QString textData;
-//    int rows = inputSpreadsheet->rowCount();
-//    int columns = inputSpreadsheet->columnCount();
-
-//    for (int i = 0; i < rows; i++) {
-//        for (int j = 0; j < columns; j++) {
-//                textData += inputSpreadsheet->item(i,j)).toString();
-//                textData += "\t";      // for .csv file format
-//        }
-//        textData += "\n";             // (optional: for new line segmentation)
-//    }
-
-//    // [Save to file] (header file <QFile> needed)
-//    // .csv
-//    QFile csvFile("test.csv");
-//    if(csvFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-
-//        QTextStream out(&csvFile);
-//        out << textData;
-
-//        csvFile.close();
-//    }
-
-//    // .txt
-//    QFile txtFile("test.txt");
-//    if(txtFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-
-//        QTextStream out(&txtFile);
-//        out << textData;
-
-//        txtFile.close();
-//    }
-//}
 
 void MainWindow::saveInputToText()
 { 
