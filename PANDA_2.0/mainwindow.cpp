@@ -59,13 +59,13 @@ void MainWindow::tutorial()
    QMessageBox::about(this, tr("Tutorial"),
             tr("<u>Hull Design using PANDA + POSSUM</u><br>"
                "<br>"
-               "<b>1.</b> Define input setup and weighted table in Design -> Edit Designs (or use menu bar shortcut)<br>"
-               "<b>2.</b> Iterate to find the most optimal design for the given inputs in Design -> Run Analysis<br>"
-               "<b>3.</b> View the best design and associated score in main window<br>"
-               "<b>4.</b> [Optional] Create additional versions of input setup and weighted table if needed<br>"
-               "<b>5.</b> [Optional] Find the best canoe across all versions using Design -> Rank Designs<br>"
-               "<b>6.</b> Output mesh for selected design(s) by checking the box(s) and clicking Design -> Mesh<br>"
-               "<b>7.</b> Save and Exit<br>"));
+               "<b>1.</b> Define input setup and weighted table in main window<br>"
+               "<b>2.</b> Generate all design iterations for the given inputs in Design -> Run Analysis (or use toolbar icons)<br>"
+               "<b>3.</b> View all generated designs in Design -> Show All Designs<br>"
+               "<b>4.</b> View the results and associated score in Design -> Show Results<br>"
+               "<b>5.</b> Output mesh for selected design(s) in Design -> Mesh<br>"
+               "<br>"
+               "<b>Note:</b> All design iterations and results are automatically saved as txt files to the same folder.<br>"));
 }
 
 void MainWindow::parameters()

@@ -37,7 +37,7 @@ ShowScore::ShowScore(QWidget *parent)
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
-    resultsSpreadsheet = new Spreadsheet(rowData.size(),numresultsHeaderH);
+    resultsSpreadsheet = new Spreadsheet(rowData.size()-1,numresultsHeaderH);
     resultsSpreadsheet->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     resultsSpreadsheet -> setHorizontalHeaderLabels( resultsHeaderH );
     mainLayout->addWidget(resultsSpreadsheet);
